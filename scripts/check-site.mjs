@@ -13,7 +13,6 @@ const required = Array.of(
   'miarka/sample-a4.jpg',
   'miarka/src/cv/detectA4.js',
   'miarka/src/cv/warp.js',
-  'miarka/src/ui/konvaLayer.js',
   'marketing/source/marketing-pack.json',
   'marketing/generated/marketing-pack.md',
   'marketing/generated/review-manifest.json',
@@ -39,7 +38,6 @@ for (const relativePath of Array.of(
   'miarka/app.js',
   'miarka/src/cv/detectA4.js',
   'miarka/src/cv/warp.js',
-  'miarka/src/ui/konvaLayer.js',
 )) {
   new vm.Script(fs.readFileSync(path.join(root, relativePath), 'utf8'), { filename: relativePath });
 }
@@ -71,7 +69,8 @@ const inlineScripts = Array.from(indexHtml.matchAll(/<script>([\s\S]*?)<\/script
 for (const script of inlineScripts) new vm.Script(script, { filename: 'index.html inline script' });
 
 const miarkaHtml = fs.readFileSync(path.join(root, 'miarka/index.html'), 'utf8');
-for (const id of Array.of('file', 'fileName', 'sampleBtn', 'autoDetectBtn', 'result', 'inputCanvas', 'warpedCanvas')) {
+if (miarkaHtml.includes('docs.opencv.org/4.x/opencv.js')) throw new Error('Production Miarka must lazy-load OpenCV.');
+for (const id of Array.of('file', 'cameraFile', 'fileName', 'sampleBtn', 'autoDetectBtn', 'manualCornersBtn', 'measurementPanel', 'measureWidthBtn', 'measureHeightBtn', 'sendAreaBtn', 'result', 'inputCanvas', 'warpedCanvas')) {
   if (!miarkaHtml.includes(`id="${id}"`)) throw new Error(`Miarka is missing required element: ${id}`);
 }
 
