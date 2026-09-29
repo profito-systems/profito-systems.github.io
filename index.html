@@ -11,11 +11,13 @@
   <header class="navbar">
     <a class="logo" href="#top" aria-label="Profito.system home">Profito.system</a>
     <nav aria-label="Main navigation">
+      <a href="#planner">Plan project</a>
       <a href="#services" data-i18n="nav_services">Services</a>
       <a href="#calculator" data-i18n="nav_calculator">Calculator</a>
       <a href="/miarka/" data-i18n="nav_miarka">A4 Measure</a>
       <a href="#suppliers" data-i18n="nav_suppliers">Local suppliers</a>
       <a href="#portfolio" data-i18n="nav_portfolio">Portfolio</a>
+      <a href="#find-trade">Find a trade</a>
       <a href="#quote" data-i18n="nav_quote">Quote</a>
     </nav>
     <div class="lang-switcher" aria-label="Language selector">
@@ -32,8 +34,84 @@
       <h1 data-i18n="hero_title">From a real measurement to a clear plan</h1>
       <p data-i18n="hero_text">Profito.system combines practical property work with simple browser tools for measuring, estimating and finding nearby material suppliers across West London.</p>
       <div class="hero-actions">
-        <a class="btn-primary" href="/miarka/" data-i18n="hero_miarka">Open A4 Measure</a>
-        <a class="btn-secondary" href="#quote" data-i18n="hero_quote">Prepare a quote request</a>
+        <a class="btn-primary" href="#planner">Plan a project</a>
+        <a class="btn-secondary" href="#portfolio">See real work</a>
+      </div>
+    </section>
+
+
+    <section id="planner" class="app-module">
+      <div class="section-heading">
+        <p class="eyebrow">Project planner · working preview</p>
+        <h2>Understand the job before asking for a quote</h2>
+        <p>Start with the area, choose a material level and see an indicative split between tiles, fixing materials and labour. Then compare nearby suppliers or prepare a project brief.</p>
+      </div>
+
+      <div class="planner-layout">
+        <form id="tilePlannerForm" class="card planner-card">
+          <div class="planner-step"><span>1</span><div><strong>Choose the job</strong><p>Tiling is live in this preview. Painting, flooring and repairs can follow the same pattern.</p></div></div>
+
+          <div class="form-grid">
+            <div class="input-group">
+              <label for="plannerJob">Project type</label>
+              <select id="plannerJob">
+                <option value="tiling">Replace or install tiles</option>
+                <option value="painting" disabled>Painting · next</option>
+                <option value="flooring" disabled>Flooring · next</option>
+                <option value="repairs" disabled>Repairs · next</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="plannerArea">Area in m²</label>
+              <input id="plannerArea" type="number" min="0.5" step="0.1" value="8" required>
+            </div>
+          </div>
+
+          <div class="planner-step"><span>2</span><div><strong>Choose the material level</strong><p>The ranges are indicative examples, not a live supplier quote.</p></div></div>
+
+          <div class="tier-grid" role="radiogroup" aria-label="Tile price level">
+            <label class="tier-card">
+              <input type="radio" name="tileTier" value="economy">
+              <span><strong>Economy</strong><small>about £12–£25 per m²</small></span>
+            </label>
+            <label class="tier-card">
+              <input type="radio" name="tileTier" value="standard" checked>
+              <span><strong>Standard</strong><small>about £25–£50 per m²</small></span>
+            </label>
+            <label class="tier-card">
+              <input type="radio" name="tileTier" value="premium">
+              <span><strong>Premium</strong><small>about £50–£100 per m²</small></span>
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <div class="input-group">
+              <label for="plannerPostcode">Postcode or area</label>
+              <input id="plannerPostcode" value="TW8" autocomplete="postal-code">
+            </div>
+            <div class="input-group planner-measure">
+              <span class="field-label">Need the area?</span>
+              <a class="btn-secondary" href="/miarka/">Measure from a photo with A4</a>
+            </div>
+          </div>
+
+          <label class="planner-check"><input id="plannerWaste" type="checkbox" checked> Include 10% tile allowance for cuts and waste</label>
+          <button class="btn-primary" type="submit">Estimate tiling budget</button>
+        </form>
+
+        <aside class="card estimate-card" aria-live="polite">
+          <p class="eyebrow">Indicative budget</p>
+          <h3 id="plannerEstimateTitle">Enter the project details</h3>
+          <div id="plannerEstimate" class="estimate-breakdown">
+            <p>Use the planner to see a simple material and labour range.</p>
+          </div>
+          <p class="estimate-note">Preparation, removal of old finishes, levelling, waterproofing, parking, waste disposal, unusual patterns and hidden defects can change the final quote.</p>
+          <div class="estimate-actions">
+            <button id="plannerSuppliers" class="btn-secondary" type="button">Compare nearby suppliers</button>
+            <a class="btn-primary" href="#quote">Prepare a project brief</a>
+          </div>
+          <p class="source-note">Price context: current UK examples from <a href="https://www.checkatrade.com/blog/cost-guides/tiling-cost/" target="_blank" rel="noopener noreferrer">Checkatrade</a>, <a href="https://www.wickes.co.uk/Products/Tiles/All-Tiles/c/1070003" target="_blank" rel="noopener noreferrer">Wickes</a> and <a href="https://www.toppstiles.co.uk/wall-tiles" target="_blank" rel="noopener noreferrer">Topps Tiles</a>.</p>
+        </aside>
       </div>
     </section>
 
@@ -102,9 +180,9 @@
 
     <section id="portfolio" class="app-module">
       <div class="section-heading">
-        <p class="eyebrow" data-i18n="portfolio_eyebrow">Selected work</p>
-        <h2 data-i18n="portfolio_title">Portfolio</h2>
-        <p data-i18n="portfolio_text">Selected material from the existing Profito project archive.</p>
+        <p class="eyebrow" data-i18n="portfolio_eyebrow">Real Profito work</p>
+        <h2 data-i18n="portfolio_title">Real projects, not stock photos</h2>
+        <p data-i18n="portfolio_text">Selected photographs from the existing Profito project archive, used as real examples of completed and in-progress work.</p>
       </div>
       <div class="gallery">
         <figure><img src="assets/work_013.jpg" loading="lazy" alt="Interior finishing detail"><figcaption data-i18n="gallery_1">Interior finish</figcaption></figure>
@@ -115,6 +193,50 @@
         <figure><img src="assets/work_106.jpg" loading="lazy" alt="Renovation tools and materials"><figcaption data-i18n="gallery_6">Project preparation</figcaption></figure>
         <figure><img src="assets/work_111.jpg" loading="lazy" alt="Materials prepared for installation"><figcaption data-i18n="gallery_7">Installation work</figcaption></figure>
         <figure><img src="assets/work_151.jpg" loading="lazy" alt="Completed project detail"><figcaption data-i18n="gallery_8">Finished result</figcaption></figure>
+      </div>
+    </section>
+
+
+    <section id="find-trade" class="app-module">
+      <div class="section-heading">
+        <p class="eyebrow">Local trades · simple first</p>
+        <h2>Find help nearby, or join the future local jobs pilot</h2>
+        <p>The homeowner side works now as a local search. The tradesperson model below is a transparent pilot concept, not a live paid marketplace yet.</p>
+      </div>
+      <div class="trade-layout">
+        <div class="card">
+          <h3>Find a local tradesperson</h3>
+          <p>Choose the trade and your area. Profito opens a local map search so you can compare nearby options.</p>
+          <div class="form-grid">
+            <div class="input-group">
+              <label for="tradeType">Trade</label>
+              <select id="tradeType">
+                <option value="tiler">Tiler</option>
+                <option value="painter decorator">Painter & decorator</option>
+                <option value="flooring installer">Flooring installer</option>
+                <option value="handyman property repairs">Property repairs</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="tradePostcode">Postcode or area</label>
+              <input id="tradePostcode" value="TW8" autocomplete="postal-code">
+            </div>
+          </div>
+          <button id="tradeSearchButton" class="btn-primary" type="button">Search nearby trades</button>
+        </div>
+
+        <div class="card trade-pilot">
+          <p class="eyebrow">For local tradespeople</p>
+          <h3>No subscription maze</h3>
+          <p>The intended Profito model is simple: local jobs that match your trade and area, with no monthly subscription. A fee would apply only when an agreed job is actually won.</p>
+          <ul class="plain-list">
+            <li>No monthly membership planned</li>
+            <li>Choose relevant local work</li>
+            <li>Clear job details before committing</li>
+            <li>Pay-for-success model still to be tested before launch</li>
+          </ul>
+          <a class="btn-secondary" href="#quote">See the project brief format</a>
+        </div>
       </div>
     </section>
 
@@ -318,5 +440,73 @@
 
     setLanguage('en');
   </script>
+
+  <script>
+    const tileRanges = {
+      economy: { min: 12, max: 25, label: 'Economy' },
+      standard: { min: 25, max: 50, label: 'Standard' },
+      premium: { min: 50, max: 100, label: 'Premium' }
+    };
+
+    const money = function (value) {
+      return new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP',
+        maximumFractionDigits: 0
+      }).format(value);
+    };
+
+    document.getElementById('tilePlannerForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const area = Number(document.getElementById('plannerArea').value);
+      if (!Number.isFinite(area) || area <= 0) return;
+
+      const tierKey = document.querySelector('input[name="tileTier"]:checked').value;
+      const tier = tileRanges[tierKey];
+      const includeWaste = document.getElementById('plannerWaste').checked;
+      const tileArea = area * (includeWaste ? 1.1 : 1);
+
+      const tileMin = tileArea * tier.min;
+      const tileMax = tileArea * tier.max;
+      const fixing = area * 10;
+      const labourMin = area * 40;
+      const labourMax = area * 60;
+      const totalMin = tileMin + fixing + labourMin;
+      const totalMax = tileMax + fixing + labourMax;
+
+      document.getElementById('plannerEstimateTitle').textContent =
+        tier.label + ' tile project · ' + area.toFixed(1) + ' m²';
+
+      const wasteText = includeWaste ? ' incl. 10% allowance' : '';
+      document.getElementById('plannerEstimate').innerHTML =
+        '<div class="estimate-row"><span>Tiles' + wasteText + '</span><strong>' + money(tileMin) + '–' + money(tileMax) + '</strong></div>' +
+        '<div class="estimate-row"><span>Adhesive & grout guide</span><strong>about ' + money(fixing) + '</strong></div>' +
+        '<div class="estimate-row"><span>Labour guide</span><strong>' + money(labourMin) + '–' + money(labourMax) + '</strong></div>' +
+        '<div class="estimate-total"><span>Indicative total</span><strong>' + money(totalMin) + '–' + money(totalMax) + '</strong></div>';
+
+      const postcode = document.getElementById('plannerPostcode').value.trim();
+      if (postcode) {
+        document.getElementById('supplierArea').value = postcode;
+        document.getElementById('tradePostcode').value = postcode;
+      }
+    });
+
+    document.getElementById('plannerSuppliers').addEventListener('click', function () {
+      const postcode = document.getElementById('plannerPostcode').value.trim();
+      if (postcode) document.getElementById('supplierArea').value = postcode;
+      buildSupplierLinks();
+      document.getElementById('suppliers').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    document.getElementById('tradeSearchButton').addEventListener('click', function () {
+      const trade = document.getElementById('tradeType').value;
+      const area = document.getElementById('tradePostcode').value.trim() || 'West London';
+      const query = trade + ' near ' + area + ' UK';
+      window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank', 'noopener,noreferrer');
+    });
+
+    document.getElementById('tilePlannerForm').requestSubmit();
+  </script>
+
 </body>
 </html>
