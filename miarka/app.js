@@ -33,6 +33,33 @@ let manualCorners = [];
 let measureMode = null;
 let measurePoints = { width: [], height: [] };
 let measuredMm = { width: null, height: null };
+let openCvPromise = null;
+
+function ensureOpenCv() {
+  if (typeof cv !== 'undefined' && cv.imread) return Promise.resolve();
+  if (openCvPromise) return openCvPromise;
+
+  openCvPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-opencv-loader]');
+    if (existing) {
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener('error', () => reject(new Error('Nie udało się załadować OpenCV.')), { once: true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://docs.opencv.org/4.x/opencv.js';
+    script.async = true;
+    script.dataset.opencvLoader = 'true';
+    script.addEventListener('load', resolve, { once: true });
+    script.addEventListener('error', () => reject(new Error('Nie udało się załadować OpenCV.')), { once: true });
+    document.head.appendChild(script);
+  }).finally(() => {
+    if (typeof cv === 'undefined' || !cv.imread) openCvPromise = null;
+  });
+
+  return openCvPromise;
+}
 
 function setStatus(message, tone = '') {
   resultEl.textContent = message;
@@ -322,16 +349,16 @@ autoBtn.addEventListener('click', async () => {
     return;
   }
 
-  if (typeof cv === 'undefined' || !cv.imread || typeof detectReference !== 'function' || typeof warpReference !== 'function') {
-    setStatus('Moduł pomiarowy jeszcze się uruchamia. Odczekaj chwilę i spróbuj ponownie.', 'is-warning');
-    return;
-  }
-
   autoBtn.disabled = true;
   autoBtn.textContent = 'Wykrywam wzorzec…';
   setStatus('Szukam prostokąta o proporcjach wybranego wzorca…');
 
   try {
+    setStatus('Uruchamiam moduł pomiarowy…');
+    await ensureOpenCv();
+    if (typeof cv === 'undefined' || !cv.imread || typeof detectReference !== 'function' || typeof warpReference !== 'function') {
+      throw new Error('OpenCV nie jest gotowe.');
+    }
     drawBaseImage();
     const targetRatio = spec.longSideMm / spec.shortSideMm;
     const corners = await detectReference(inputCanvas, targetRatio, {
@@ -347,7 +374,7 @@ autoBtn.addEventListener('click', async () => {
     applyReferenceCorners(corners);
   } catch (error) {
     console.error(error);
-    setStatus('Wystąpił błąd podczas analizy. Spróbuj trybu ręcznego.', 'is-error');
+    setStatus('Nie udało się uruchomić automatu. Tryb ręczny nadal działa i możesz wskazać cztery narożniki.', 'is-error');
   } finally {
     autoBtn.disabled = false;
     autoBtn.textContent = 'Wykryj wzorzec automatycznie';
