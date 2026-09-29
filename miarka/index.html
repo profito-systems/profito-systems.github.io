@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0f172a">
-  <meta name="description" content="Miarka A4 Profito wykrywa kartkę A4 na zdjęciu i wyznacza skalę pomiaru bez wysyłania obrazu na serwer.">
-  <title>Miarka A4 — Profito</title>
+  <meta name="description" content="Miarka Profito skaluje zdjęcie na podstawie A4, karty ID-1 lub własnego prostokąta o znanym wymiarze i pomaga oszacować wymiary powierzchni lokalnie w przeglądarce.">
+  <title>Miarka — Profito</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -19,71 +19,129 @@
 
   <main id="app">
     <section class="hero">
-      <p class="eyebrow">Narzędzie pomiarowe Profito</p>
-      <h1>Miarka A4</h1>
-      <p class="lead">Dodaj zdjęcie z kartką A4. Narzędzie rozpozna jej krawędzie, wyprostuje perspektywę i wyznaczy skalę pomiaru.</p>
+      <p class="eyebrow">Pomiar ze zdjęcia · wersja 2</p>
+      <h1>Miarka Profito</h1>
+      <p class="lead">Użyj przedmiotu o znanych wymiarach jako skali, popraw narożniki ręcznie jeśli automat się pomyli, a potem zmierz szerokość i wysokość powierzchni na tym samym planie.</p>
     </section>
 
     <ol class="steps">
-      <li><span>1</span><strong>Połóż kartkę A4</strong><small>na mierzonej powierzchni</small></li>
-      <li><span>2</span><strong>Zrób zdjęcie</strong><small>pokaż całą kartkę z bliska, bez zrzutu ekranu</small></li>
-      <li><span>3</span><strong>Uruchom wykrywanie</strong><small>sprawdź wyprostowany podgląd</small></li>
+      <li><span>1</span><strong>Wybierz wzorzec</strong><small>A4, karta standardowa albo własny prostokąt</small></li>
+      <li><span>2</span><strong>Zrób zdjęcie</strong><small>wzorzec i mierzona powierzchnia powinny leżeć na tej samej płaszczyźnie</small></li>
+      <li><span>3</span><strong>Skalibruj i zmierz</strong><small>automat lub cztery narożniki ręcznie, potem dwie linie pomiarowe</small></li>
     </ol>
+
+    <section class="reference-card" aria-labelledby="reference-title">
+      <div>
+        <p class="section-label">Krok 1</p>
+        <h2 id="reference-title">Co masz pod ręką?</h2>
+        <p class="muted">Nie musisz używać A4. Najlepszy jest płaski prostokąt o dokładnie znanym rozmiarze.</p>
+      </div>
+
+      <div class="reference-options" role="radiogroup" aria-label="Wybór przedmiotu referencyjnego">
+        <label class="reference-option">
+          <input type="radio" name="referenceType" value="a4" checked>
+          <span><strong>Kartka A4</strong><small>210 × 297 mm</small></span>
+        </label>
+        <label class="reference-option">
+          <input type="radio" name="referenceType" value="card">
+          <span><strong>Karta standardowa ID-1</strong><small>85,60 × 53,98 mm</small></span>
+        </label>
+        <label class="reference-option">
+          <input type="radio" name="referenceType" value="custom">
+          <span><strong>Własny prostokąt</strong><small>wpisz dwa znane wymiary</small></span>
+        </label>
+      </div>
+
+      <div class="custom-size is-hidden" id="customSizeFields">
+        <label>Dłuższy bok w mm<input id="customLong" type="number" min="10" step="0.1" value="100"></label>
+        <label>Krótszy bok w mm<input id="customShort" type="number" min="10" step="0.1" value="60"></label>
+      </div>
+
+      <p class="privacy-note" id="cardPrivacy" hidden>Do trybu karty użyj najlepiej pustej karty lojalnościowej, podarunkowej lub dostępowej tego formatu. Nie fotografuj danych karty płatniczej ani dokumentu tożsamości.</p>
+    </section>
 
     <section class="upload-card" aria-labelledby="upload-title">
       <div class="upload-copy">
-        <p class="section-label">Zdjęcie do pomiaru</p>
-        <h2 id="upload-title">Wybierz zdjęcie kartki A4</h2>
-        <p>Użyj oryginalnego zdjęcia, nie zrzutu ekranu. Podejdź na tyle blisko, aby kartka zajmowała wyraźną część kadru i miała widoczne cztery narożniki.</p>
+        <p class="section-label">Krok 2</p>
+        <h2 id="upload-title">Dodaj zdjęcie</h2>
+        <p>Cały wzorzec musi być widoczny, a jego cztery narożniki powinny być czytelne. Im bliżej tej samej płaszczyzny znajduje się mierzony fragment, tym sensowniejszy będzie wynik.</p>
       </div>
 
       <div class="controls">
         <input class="file-input" id="file" type="file" accept="image/*">
         <label class="file-button" for="file">
           <span class="file-icon" aria-hidden="true">+</span>
-          <span>Wybierz zdjęcie</span>
+          <span>Wybierz z galerii</span>
+        </label>
+        <input class="file-input" id="cameraFile" type="file" accept="image/*" capture="environment">
+        <label class="file-button" for="cameraFile">
+          <span class="file-icon" aria-hidden="true">●</span>
+          <span>Zrób zdjęcie</span>
         </label>
         <span class="file-name" id="fileName">Nie wybrano zdjęcia</span>
-        <button class="sample-button" id="sampleBtn" type="button">Wypróbuj bezpieczny wzorzec</button>
-        <button id="autoDetectBtn" type="button" disabled>Wykryj kartkę A4</button>
+        <button class="sample-button" id="sampleBtn" type="button">Wypróbuj wzorzec A4</button>
+        <button id="autoDetectBtn" type="button" disabled>Wykryj wzorzec automatycznie</button>
+        <button class="secondary-button" id="manualCornersBtn" type="button" disabled>Wskaż 4 narożniki ręcznie</button>
       </div>
 
-      <div class="status" id="result" role="status" aria-live="polite">Najpierw wybierz zdjęcie z urządzenia.</div>
+      <div class="status" id="result" role="status" aria-live="polite">Wybierz wzorzec i dodaj zdjęcie.</div>
     </section>
 
-    <section class="canvases is-hidden" id="canvases" aria-label="Podgląd pomiaru">
+    <section class="canvases is-hidden" id="canvases" aria-label="Podgląd kalibracji">
       <article class="canvas-card">
         <div class="canvas-heading">
-          <span>Zdjęcie wejściowe</span>
-          <h2>Oryginał</h2>
+          <span>Klikalny podgląd</span>
+          <h2>Zdjęcie i punkty pomiarowe</h2>
         </div>
         <div class="canvas-frame">
           <canvas id="inputCanvas"></canvas>
         </div>
+        <p class="canvas-help" id="canvasHelp">Po wykryciu wzorca wybierz pomiar szerokości lub wysokości i wskaż dwa punkty.</p>
       </article>
 
       <article class="canvas-card">
         <div class="canvas-heading">
-          <span>Wynik wykrywania</span>
-          <h2>Wyprostowana kartka A4</h2>
+          <span>Kontrola perspektywy</span>
+          <h2 id="referencePreviewTitle">Wyprostowany wzorzec</h2>
         </div>
         <div class="canvas-frame">
           <canvas id="warpedCanvas" width="840" height="1188"></canvas>
         </div>
       </article>
     </section>
+
+    <section class="measure-card is-hidden" id="measurementPanel">
+      <div class="measure-copy">
+        <p class="section-label">Krok 3</p>
+        <h2>Zmierz powierzchnię</h2>
+        <p id="calibrationSummary">Najpierw skalibruj wzorzec.</p>
+        <p class="warning-note">Pomiar perspektywiczny zakłada, że wzorzec oraz mierzone punkty znajdują się na tej samej płaskiej powierzchni. Dla narożników na innej ścianie lub innym poziomie wynik może być błędny.</p>
+      </div>
+
+      <div class="measure-actions">
+        <button class="secondary-button" id="measureWidthBtn" type="button">Zmierz szerokość</button>
+        <button class="secondary-button" id="measureHeightBtn" type="button">Zmierz wysokość</button>
+        <button class="ghost-button" id="clearMeasuresBtn" type="button">Wyczyść pomiary</button>
+      </div>
+
+      <div class="measure-results">
+        <div><span>Szerokość</span><strong id="widthResult">—</strong></div>
+        <div><span>Wysokość</span><strong id="heightResult">—</strong></div>
+        <div class="area-result"><span>Powierzchnia prostokąta</span><strong id="areaResult">—</strong></div>
+      </div>
+
+      <button class="save-area-button" id="sendAreaBtn" type="button" disabled>Przenieś powierzchnię do kalkulatora Profito</button>
+    </section>
   </main>
 
   <footer>
-    <strong>Twoje zdjęcie zostaje na urządzeniu.</strong>
-    <span>Przetwarzanie odbywa się lokalnie w przeglądarce.</span>
+    <strong>Zdjęcie zostaje na urządzeniu.</strong>
+    <span>Analiza odbywa się lokalnie w przeglądarce. Wynik jest orientacyjny, nie geodezyjny.</span>
   </footer>
 
   <script src="https://docs.opencv.org/4.x/opencv.js"></script>
-  <script src="https://unpkg.com/konva@8/konva.min.js"></script>
   <script src="src/cv/detectA4.js"></script>
   <script src="src/cv/warp.js"></script>
-  <script src="src/ui/konvaLayer.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

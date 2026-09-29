@@ -1,10 +1,9 @@
-async function detectA4(canvas) {
+async function detectReference(canvas, targetAspectRatio, options = {}) {
   return new Promise((resolve) => {
     let src;
     let gray;
     let contours;
     let hierarchy;
-    let best;
 
     try {
       src = cv.imread(canvas);
@@ -12,48 +11,60 @@ async function detectA4(canvas) {
 
       cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
       cv.GaussianBlur(gray, gray, new cv.Size(5, 5), 0);
-      cv.Canny(gray, gray, 50, 150);
+      cv.Canny(gray, gray, 45, 145);
 
       contours = new cv.MatVector();
       hierarchy = new cv.Mat();
       cv.findContours(gray, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
 
-      let bestScore = 0;
+      const minAreaShare = Number.isFinite(options.minAreaShare) ? options.minAreaShare : 0.01;
+      const maxAreaShare = Number.isFinite(options.maxAreaShare) ? options.maxAreaShare : 0.98;
+      const aspectTolerance = Number.isFinite(options.aspectTolerance) ? options.aspectTolerance : 0.42;
       const imageArea = src.rows * src.cols;
-      const a4AspectRatio = 297 / 210;
+      let bestCorners = null;
+      let bestScore = 0;
 
       for (let i = 0; i < contours.size(); i++) {
         const cnt = contours.get(i);
         const peri = cv.arcLength(cnt, true);
-        const approx = new cv.Mat();
-        cv.approxPolyDP(cnt, approx, 0.02 * peri, true);
+        const epsilonFactors = [0.015, 0.025, 0.04, 0.06];
 
-        if (approx.rows === 4 && cv.isContourConvex(approx)) {
-          const area = cv.contourArea(approx);
-          const corners = cornersFromContour(approx);
-          const aspectRatio = quadrilateralAspectRatio(orderCorners(corners));
-          const areaShare = area / imageArea;
-          const aspectError = Math.abs(aspectRatio - a4AspectRatio) / a4AspectRatio;
-          const isCredibleA4 = areaShare >= 0.025 && areaShare <= 0.98 && aspectError <= 0.4;
-          const score = area * Math.max(0.2, 1 - aspectError);
+        for (const epsilonFactor of epsilonFactors) {
+          const approx = new cv.Mat();
+          cv.approxPolyDP(cnt, approx, epsilonFactor * peri, true);
 
-          if (isCredibleA4 && score > bestScore) {
-            bestScore = score;
-            if (best) best.delete();
-            best = approx;
-          } else approx.delete();
-        } else approx.delete();
+          if (approx.rows === 4 && cv.isContourConvex(approx)) {
+            const area = Math.abs(cv.contourArea(approx));
+            const corners = orderCorners(cornersFromContour(approx));
+            const aspectRatio = quadrilateralAspectRatio(corners);
+            const areaShare = area / imageArea;
+            const aspectError = Math.abs(aspectRatio - targetAspectRatio) / targetAspectRatio;
+            const credible =
+              areaShare >= minAreaShare &&
+              areaShare <= maxAreaShare &&
+              aspectError <= aspectTolerance;
+
+            if (credible) {
+              const shapeScore = Math.max(0.12, 1 - aspectError);
+              const score = area * shapeScore;
+              if (score > bestScore) {
+                bestScore = score;
+                bestCorners = corners;
+              }
+            }
+          }
+
+          approx.delete();
+        }
 
         cnt.delete();
       }
 
-      if (!best) return resolve(null);
-      resolve(orderCorners(cornersFromContour(best)));
-    } catch (err) {
-      console.error(err);
+      resolve(bestCorners);
+    } catch (error) {
+      console.error(error);
       resolve(null);
     } finally {
-      if (best) best.delete();
       if (hierarchy) hierarchy.delete();
       if (contours) contours.delete();
       if (gray) gray.delete();
@@ -62,8 +73,15 @@ async function detectA4(canvas) {
   });
 }
 
+async function detectA4(canvas) {
+  return detectReference(canvas, 297 / 210, {
+    minAreaShare: 0.025,
+    aspectTolerance: 0.4,
+  });
+}
+
 function cornersFromContour(contour) {
-  const corners = Array.of();
+  const corners = [];
   for (let i = 0; i < 4; i++) {
     const point = contour.intPtr(i, 0);
     corners.push({ x: point[0], y: point[1] });
@@ -88,12 +106,35 @@ function quadrilateralAspectRatio(corners) {
   return shorterSide > 0 ? Math.max(width, height) / shorterSide : Number.POSITIVE_INFINITY;
 }
 
-function orderCorners(pts) {
+function referenceOutputGeometry(corners, longSideMm, shortSideMm, pixelsPerMillimetre = 4) {
+  const averageWidth = (
+    pointDistance(corners[0], corners[1]) +
+    pointDistance(corners[3], corners[2])
+  ) / 2;
+  const averageHeight = (
+    pointDistance(corners[0], corners[3]) +
+    pointDistance(corners[1], corners[2])
+  ) / 2;
+  const landscape = averageWidth > averageHeight;
+  const widthMm = landscape ? longSideMm : shortSideMm;
+  const heightMm = landscape ? shortSideMm : longSideMm;
+
+  return {
+    orientation: landscape ? 'pozioma' : 'pionowa',
+    widthMm,
+    heightMm,
+    widthPixels: Math.max(1, Math.round(widthMm * pixelsPerMillimetre)),
+    heightPixels: Math.max(1, Math.round(heightMm * pixelsPerMillimetre)),
+  };
+}
+
+function orderCorners(points) {
+  const pts = points.map((point) => ({ x: point.x, y: point.y }));
   pts.sort((a, b) => a.x + a.y - (b.x + b.y));
   const tl = pts[0];
   const br = pts[3];
-  const mid = Array.of(pts[1], pts[2]);
+  const mid = [pts[1], pts[2]];
   const tr = mid[0].x > mid[1].x ? mid[0] : mid[1];
   const bl = mid[0].x > mid[1].x ? mid[1] : mid[0];
-  return Array.of(tl, tr, br, bl);
+  return [tl, tr, br, bl];
 }
