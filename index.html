@@ -373,7 +373,7 @@
       document.getElementById('areaResult').textContent = `${(length * width).toFixed(2)} m²`;
     });
 
-    const suppliers = ['B&Q', 'Wickes', 'Screwfix', 'Toolstation', 'Travis Perkins', 'Jewson', 'Selco Builders Warehouse'];
+    const suppliers = ['Topps Tiles', 'Tile Giant', 'Wickes', 'B&Q', 'Screwfix', 'Toolstation', 'Travis Perkins', 'Jewson', 'Selco Builders Warehouse'];
 
     function buildSupplierLinks() {
       const area = document.getElementById('supplierArea').value.trim() || 'TW8';
@@ -488,7 +488,12 @@
       if (postcode) {
         document.getElementById('supplierArea').value = postcode;
         document.getElementById('tradePostcode').value = postcode;
+        document.getElementById('quoteArea').value = postcode;
       }
+
+      const brief = 'Tiling project, approx. ' + area.toFixed(1) + ' m², ' + tier.label + ' material level. Indicative materials and labour range: ' + money(totalMin) + '–' + money(totalMax) + '. Final quote depends on preparation, removal, substrate condition, waterproofing, pattern, access and waste disposal.';
+      document.getElementById('quoteWork').value = brief;
+      document.getElementById('quotePriority').value = 'Indicative range ' + money(totalMin) + '–' + money(totalMax);
     });
 
     document.getElementById('plannerSuppliers').addEventListener('click', function () {
