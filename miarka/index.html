@@ -21,13 +21,13 @@
     <section class="hero">
       <p class="eyebrow">Pomiar ze zdjęcia · wersja 2</p>
       <h1>Miarka Profito</h1>
-      <p class="lead">Użyj przedmiotu o znanych wymiarach jako skali, popraw narożniki ręcznie jeśli automat się pomyli, a potem zmierz szerokość i wysokość powierzchni na tym samym planie.</p>
+      <p class="lead">Karta, kartka, cegła w ścianie, płytka albo własny przedmiot: wybierz znany wymiar, wskaż wzorzec i zmierz powierzchnię ze zdjęcia. Pomiar ręczny działa także bez modułu automatycznego.</p>
     </section>
 
     <ol class="steps">
-      <li><span>1</span><strong>Wybierz wzorzec</strong><small>A4, karta standardowa albo własny prostokąt</small></li>
+      <li><span>1</span><strong>Wybierz wzorzec</strong><small>przedmiot o znanych wymiarach</small></li>
       <li><span>2</span><strong>Zrób zdjęcie</strong><small>wzorzec i mierzona powierzchnia powinny leżeć na tej samej płaszczyźnie</small></li>
-      <li><span>3</span><strong>Skalibruj i zmierz</strong><small>automat lub cztery narożniki ręcznie, potem dwie linie pomiarowe</small></li>
+      <li><span>3</span><strong>Skalibruj i zmierz</strong><small>narożniki prostokąta lub znany odcinek, potem dwa boki powierzchni</small></li>
     </ol>
 
     <section class="reference-card" aria-labelledby="reference-title">
@@ -47,17 +47,48 @@
           <span><strong>Karta standardowa ID-1</strong><small>85,60 × 53,98 mm</small></span>
         </label>
         <label class="reference-option">
+          <input type="radio" name="referenceType" value="a5">
+          <span><strong>Kartka A5</strong><small>148 × 210 mm</small></span>
+        </label>
+        <label class="reference-option">
+          <input type="radio" name="referenceType" value="brick">
+          <span><strong>Cegła</strong><small>wybierz format i widoczną ścianę</small></span>
+        </label>
+        <label class="reference-option">
+          <input type="radio" name="referenceType" value="block">
+          <span><strong>Pustak lub płytka</strong><small>wpisz rzeczywiste wymiary widocznej powierzchni</small></span>
+        </label>
+        <label class="reference-option">
           <input type="radio" name="referenceType" value="custom">
-          <span><strong>Własny prostokąt</strong><small>wpisz dwa znane wymiary</small></span>
+          <span><strong>Własny prostokąt</strong><small>książka, pudełko, telefon bez etui — znane dwa boki</small></span>
+        </label>
+        <label class="reference-option">
+          <input type="radio" name="referenceType" value="line">
+          <span><strong>Znany odcinek</strong><small>linijka, moneta albo inny znany wymiar · zdjęcie na wprost</small></span>
         </label>
       </div>
 
+      <div class="is-hidden" id="brickSizeFields">
+        <label class="field-label" for="brickFace">Format i widoczna powierzchnia cegły</label>
+        <select id="brickFace">
+          <option value="uk-face">UK — długie lico 215 × 65 mm</option>
+          <option value="uk-top">UK — powierzchnia 215 × 102,5 mm</option>
+          <option value="uk-end">UK — krótkie lico 102,5 × 65 mm</option>
+          <option value="pl-face">PL format 250 — długie lico 250 × 65 mm</option>
+          <option value="pl-top">PL format 250 — powierzchnia 250 × 120 mm</option>
+          <option value="pl-end">PL format 250 — krótkie lico 120 × 65 mm</option>
+        </select>
+      </div>
       <div class="custom-size is-hidden" id="customSizeFields">
-        <label>Dłuższy bok w mm<input id="customLong" type="number" min="10" step="0.1" value="100"></label>
-        <label>Krótszy bok w mm<input id="customShort" type="number" min="10" step="0.1" value="60"></label>
+        <label>Pierwszy bok w mm<input id="customLong" type="number" min="0.1" step="0.01" placeholder="znany wymiar"></label>
+        <label>Drugi bok w mm<input id="customShort" type="number" min="0.1" step="0.01" placeholder="znany wymiar"></label>
+      </div>
+      <div class="custom-size is-hidden" id="knownLengthFields">
+        <label>Długość odcinka w mm<input id="knownLength" type="number" min="0.1" step="0.01" placeholder="np. odcinek linijki"></label>
       </div>
 
-      <p class="privacy-note" id="cardPrivacy" hidden>Do trybu karty użyj najlepiej pustej karty lojalnościowej, podarunkowej lub dostępowej tego formatu. Nie fotografuj danych karty płatniczej ani dokumentu tożsamości.</p>
+      <p class="privacy-note" id="cardPrivacy" hidden>Użyj pustej karty lojalnościowej, podarunkowej lub dostępowej w formacie ID-1. Wskaż przecięcia prostych krawędzi, pomijając zaokrąglenia. Nie fotografuj danych karty płatniczej ani dokumentu tożsamości.</p>
+      <p class="warning-note is-hidden" id="referenceTip"></p>
     </section>
 
     <section class="upload-card" aria-labelledby="upload-title">
@@ -93,13 +124,20 @@
           <span>Klikalny podgląd</span>
           <h2>Zdjęcie i punkty pomiarowe</h2>
         </div>
-        <div class="canvas-frame">
+        <div class="canvas-tools" aria-label="Powiększenie zdjęcia">
+          <button id="zoomOutBtn" class="ghost-button" type="button" aria-label="Pomniejsz zdjęcie">−</button>
+          <output id="zoomValue" aria-live="polite">100%</output>
+          <button id="zoomInBtn" class="ghost-button" type="button" aria-label="Powiększ zdjęcie">+</button>
+          <button id="resetZoomBtn" class="ghost-button" type="button">Dopasuj</button>
+          <button id="undoPointBtn" class="ghost-button" type="button" disabled>Cofnij punkt</button>
+        </div>
+        <div class="canvas-frame" id="inputFrame">
           <canvas id="inputCanvas"></canvas>
         </div>
         <p class="canvas-help" id="canvasHelp">Po wykryciu wzorca wybierz pomiar szerokości lub wysokości i wskaż dwa punkty.</p>
       </article>
 
-      <article class="canvas-card">
+      <article class="canvas-card" id="referencePreviewCard">
         <div class="canvas-heading">
           <span>Kontrola perspektywy</span>
           <h2 id="referencePreviewTitle">Wyprostowany wzorzec</h2>
@@ -115,13 +153,16 @@
         <p class="section-label">Krok 3</p>
         <h2>Zmierz powierzchnię</h2>
         <p id="calibrationSummary">Najpierw skalibruj wzorzec.</p>
-        <p class="warning-note">Pomiar perspektywiczny zakłada, że wzorzec oraz mierzone punkty znajdują się na tej samej płaskiej powierzchni. Dla narożników na innej ścianie lub innym poziomie wynik może być błędny.</p>
+        <p class="warning-note" id="measurementWarning">Wzorzec i mierzone punkty muszą leżeć na jednej płaszczyźnie. Karta na podłodze nie skaluje ściany. Sprawdź jeden znany wymiar przed użyciem wyniku.</p>
+        <p class="muted" id="qualityNote"></p>
       </div>
 
       <div class="measure-actions">
         <button class="secondary-button" id="measureWidthBtn" type="button">Zmierz szerokość</button>
         <button class="secondary-button" id="measureHeightBtn" type="button">Zmierz wysokość</button>
         <button class="ghost-button" id="clearMeasuresBtn" type="button">Wyczyść pomiary</button>
+        <button class="ghost-button" id="swapReferenceBtn" type="button">Zamień boki wzorca 1–2 i 2–3</button>
+        <button class="ghost-button" id="exportPhotoBtn" type="button">Zapisz zdjęcie z pomiarem</button>
       </div>
 
       <div class="measure-results">
@@ -141,6 +182,7 @@
 
   <script src="src/cv/detectA4.js"></script>
   <script src="src/cv/warp.js"></script>
+  <script src="src/cv/opencv-loader.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

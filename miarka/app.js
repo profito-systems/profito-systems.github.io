@@ -23,6 +23,19 @@ const widthResult = document.getElementById('widthResult');
 const heightResult = document.getElementById('heightResult');
 const areaResult = document.getElementById('areaResult');
 const sendAreaBtn = document.getElementById('sendAreaBtn');
+const brickSizeFields = document.getElementById('brickSizeFields');
+const brickFace = document.getElementById('brickFace');
+const knownLengthFields = document.getElementById('knownLengthFields');
+const knownLength = document.getElementById('knownLength');
+const referenceTip = document.getElementById('referenceTip');
+const referencePreviewCard = document.getElementById('referencePreviewCard');
+const measurementWarning = document.getElementById('measurementWarning');
+const qualityNote = document.getElementById('qualityNote');
+const swapReferenceBtn = document.getElementById('swapReferenceBtn');
+const exportPhotoBtn = document.getElementById('exportPhotoBtn');
+const inputFrame = document.getElementById('inputFrame');
+const zoomValue = document.getElementById('zoomValue');
+const undoPointBtn = document.getElementById('undoPointBtn');
 
 let currentImage = null;
 let activeObjectUrl = null;
@@ -33,33 +46,17 @@ let manualCorners = [];
 let measureMode = null;
 let measurePoints = { width: [], height: [] };
 let measuredMm = { width: null, height: null };
-let openCvPromise = null;
-
-function ensureOpenCv() {
-  if (typeof cv !== 'undefined' && cv.imread) return Promise.resolve();
-  if (openCvPromise) return openCvPromise;
-
-  openCvPromise = new Promise((resolve, reject) => {
-    const existing = document.querySelector('script[data-opencv-loader]');
-    if (existing) {
-      existing.addEventListener('load', resolve, { once: true });
-      existing.addEventListener('error', () => reject(new Error('Nie udało się załadować OpenCV.')), { once: true });
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://docs.opencv.org/4.x/opencv.js';
-    script.async = true;
-    script.dataset.opencvLoader = 'true';
-    script.addEventListener('load', resolve, { once: true });
-    script.addEventListener('error', () => reject(new Error('Nie udało się załadować OpenCV.')), { once: true });
-    document.head.appendChild(script);
-  }).finally(() => {
-    if (typeof cv === 'undefined' || !cv.imread) openCvPromise = null;
-  });
-
-  return openCvPromise;
-}
+let calibrationVersion = 0;
+let autoRunning = false;
+let referenceSidesSwapped = false;
+let zoom = 1;
+let pointerAction = null;
+const dimensionDrafts = new Map();
+const brickSizes = {
+  'uk-face': { width: 215, height: 65 }, 'uk-top': { width: 215, height: 102.5 },
+  'uk-end': { width: 102.5, height: 65 }, 'pl-face': { width: 250, height: 65 },
+  'pl-top': { width: 250, height: 120 }, 'pl-end': { width: 120, height: 65 },
+};
 
 function setStatus(message, tone = '') {
   resultEl.textContent = message;
@@ -72,45 +69,46 @@ function selectedReferenceType() {
 
 function referenceSpec() {
   const type = selectedReferenceType();
-
-  if (type === 'card') {
-    return {
-      key: 'card',
-      label: 'karta ID-1',
-      longSideMm: 85.6,
-      shortSideMm: 53.98,
-      minAreaShare: 0.003,
-      aspectTolerance: 0.38,
-    };
-  }
-
-  if (type === 'custom') {
-    const longSideMm = Number(customLong.value);
-    const shortSideMm = Number(customShort.value);
-    if (!Number.isFinite(longSideMm) || !Number.isFinite(shortSideMm) || longSideMm <= 0 || shortSideMm <= 0) {
-      return null;
-    }
-    return {
-      key: 'custom',
-      label: 'własny wzorzec',
-      longSideMm: Math.max(longSideMm, shortSideMm),
-      shortSideMm: Math.min(longSideMm, shortSideMm),
-      minAreaShare: 0.004,
-      aspectTolerance: 0.42,
-    };
-  }
-
-  return {
-    key: 'a4',
-    label: 'A4',
-    longSideMm: 297,
-    shortSideMm: 210,
-    minAreaShare: 0.02,
-    aspectTolerance: 0.42,
+  const presets = {
+    a4: { label: 'A4', longSideMm: 297, shortSideMm: 210, minAreaShare: 0.02 },
+    a5: { label: 'A5', longSideMm: 210, shortSideMm: 148, minAreaShare: 0.01 },
+    card: { label: 'karta ID-1', longSideMm: 85.6, shortSideMm: 53.98, minAreaShare: 0.003 },
   };
+  if (presets[type]) return { key: type, aspectTolerance: 0.42, ...presets[type] };
+  if (type === 'line') {
+    const length = Number(knownLength.value);
+    return Number.isFinite(length) && length > 0
+      ? { key: type, label: 'znany odcinek', longSideMm: length, shortSideMm: null } : null;
+  }
+  const longSideMm = Number(customLong.value), shortSideMm = Number(customShort.value);
+  if (!Number.isFinite(longSideMm) || !Number.isFinite(shortSideMm) || longSideMm <= 0 || shortSideMm <= 0) return null;
+  const labels = { brick: 'wybrana powierzchnia cegły', block: 'pustak lub płytka', custom: 'własny prostokąt' };
+  return { key: type, label: labels[type], longSideMm: Math.max(longSideMm, shortSideMm),
+    shortSideMm: Math.min(longSideMm, shortSideMm), minAreaShare: 0.004, aspectTolerance: 0.42 };
+}
+
+function syncImageControls() {
+  autoBtn.disabled = !currentImage || autoRunning || selectedReferenceType() === 'line';
+  manualCornersBtn.disabled = !currentImage;
+  undoPointBtn.disabled = !(manualCornerMode ? manualCorners.length : measureMode ? measurePoints[measureMode].length : false);
+}
+
+function updateZoom(next = zoom) {
+  zoom = Math.max(1, Math.min(6, next));
+  const fitWidth = Math.min(inputCanvas.width, inputFrame.clientWidth - 2);
+  inputCanvas.style.width = Math.max(1, fitWidth * zoom) + 'px';
+  inputCanvas.style.height = 'auto';
+  zoomValue.textContent = Math.round(zoom * 100) + '%';
 }
 
 function resetCalibration() {
+  calibrationVersion++;
+  referenceSidesSwapped = false;
+  pointerAction = null;
+  inputCanvas.classList.remove('is-interactive');
+  referencePreviewCard.classList.remove('is-hidden');
+  warpedCanvas.getContext('2d').clearRect(0, 0, warpedCanvas.width, warpedCanvas.height);
+  qualityNote.textContent = '';
   referenceCorners = null;
   activeGeometry = null;
   manualCornerMode = false;
@@ -124,25 +122,68 @@ function resetCalibration() {
   areaResult.textContent = '—';
   sendAreaBtn.disabled = true;
   drawInputOverlay();
+  syncImageControls();
+}
+
+function applyBrickSize() {
+  const size = brickSizes[brickFace.value];
+  customLong.value = size.width;
+  customShort.value = size.height;
+  dimensionDrafts.set('brick', { width: String(size.width), height: String(size.height) });
 }
 
 function updateReferenceUi() {
   const type = selectedReferenceType();
-  customSizeFields.classList.toggle('is-hidden', type !== 'custom');
+  customSizeFields.classList.toggle('is-hidden', !Array.of('brick', 'block', 'custom').includes(type));
+  brickSizeFields.classList.toggle('is-hidden', type !== 'brick');
+  knownLengthFields.classList.toggle('is-hidden', type !== 'line');
   cardPrivacy.hidden = type !== 'card';
-  resetCalibration();
-  if (currentImage) {
-    setStatus('Wzorzec zmieniony. Uruchom wykrywanie ponownie.', 'is-warning');
+  if (type === 'brick') applyBrickSize();
+  else if (type === 'custom' || type === 'block') {
+    const draft = dimensionDrafts.get(type);
+    customLong.value = draft?.width || '';
+    customShort.value = draft?.height || '';
   }
+  const tips = {
+    brick: 'Wymiary cegieł są nominalne i zależą od formatu. Sprawdź swój egzemplarz, popraw wartości poniżej i wskaż tylko wybraną powierzchnię, bez fugi. Cegła w ścianie skaluje tę ścianę; jej górna powierzchnia nad podłogą nie skaluje podłogi.',
+    block: 'Pustaki i płytki nie mają jednego wspólnego rozmiaru. Wpisz rzeczywiste wymiary widocznej prostokątnej powierzchni z pomiaru lub specyfikacji produktu.',
+    custom: 'Użyj dokładnych wymiarów widocznego prostokąta. Telefon wymaga wymiarów konkretnego modelu bez etui; przypadkowa książka lub pudełko nie ma standardowego rozmiaru.',
+    line: 'Znany odcinek działa przy zdjęciu na wprost, w jednej płaszczyźnie. Nie koryguje perspektywy. Dla monet wpisz średnicę konkretnej monety. Do zdjęcia pod kątem wybierz prostokąt i cztery narożniki.',
+  };
+  referenceTip.textContent = tips[type] || '';
+  referenceTip.classList.toggle('is-hidden', !tips[type]);
+  manualCornersBtn.textContent = type === 'line' ? 'Wskaż 2 końce znanego odcinka' : 'Wskaż 4 narożniki ręcznie';
+  resetCalibration();
+  if (currentImage) setStatus('Wzorzec zmieniony. Skalibruj zdjęcie ponownie.', 'is-warning');
 }
 
 document.querySelectorAll('input[name="referenceType"]').forEach((input) => {
   input.addEventListener('change', updateReferenceUi);
 });
-customLong.addEventListener('input', resetCalibration);
-customShort.addEventListener('input', resetCalibration);
+brickFace.addEventListener('change', () => { applyBrickSize(); resetCalibration(); });
+for (const input of Array.of(customLong, customShort)) {
+  input.addEventListener('input', () => {
+    dimensionDrafts.set(selectedReferenceType(), { width: customLong.value, height: customShort.value });
+    resetCalibration();
+  });
+}
+knownLength.addEventListener('input', resetCalibration);
+document.getElementById('zoomInBtn').addEventListener('click', () => updateZoom(zoom + 0.5));
+document.getElementById('zoomOutBtn').addEventListener('click', () => updateZoom(zoom - 0.5));
+document.getElementById('resetZoomBtn').addEventListener('click', () => updateZoom(1));
+window.addEventListener('resize', () => updateZoom());
+undoPointBtn.addEventListener('click', () => {
+  if (manualCornerMode) manualCorners.pop();
+  else if (measureMode) measurePoints[measureMode].pop();
+  drawInputOverlay();
+  syncImageControls();
+});
 
 function loadImageFile(file) {
+  if (file.size > 30 * 1024 * 1024) {
+    setStatus('Zdjęcie przekracza 30 MB. Wybierz mniejszy plik.', 'is-error');
+    return;
+  }
   currentImage = null;
   autoBtn.disabled = true;
   manualCornersBtn.disabled = true;
@@ -168,10 +209,12 @@ function loadImageFile(file) {
 
     currentImage = img;
     drawInputOverlay();
-    autoBtn.disabled = false;
-    manualCornersBtn.disabled = false;
     canvasesEl.classList.remove('is-hidden');
-    setStatus('Zdjęcie gotowe. Spróbuj automatu albo wskaż cztery narożniki ręcznie.', 'is-success');
+    syncImageControls();
+    updateZoom(1);
+    setStatus(selectedReferenceType() === 'line'
+      ? 'Zdjęcie gotowe. Wskaż dwa końce znanego odcinka.'
+      : 'Zdjęcie gotowe. Spróbuj automatu albo wskaż cztery narożniki ręcznie.', 'is-success');
   };
 
   img.onerror = () => {
@@ -179,7 +222,7 @@ function loadImageFile(file) {
     URL.revokeObjectURL(objectUrl);
     activeObjectUrl = null;
     fileNameEl.textContent = 'Nie udało się wczytać pliku';
-    setStatus('Nie udało się otworzyć zdjęcia. Wybierz inny plik.', 'is-error');
+    setStatus('Nie udało się otworzyć zdjęcia. Spróbuj JPG, PNG lub WebP zamiast HEIC.', 'is-error');
   };
 }
 
@@ -235,7 +278,9 @@ function drawInputOverlay() {
     });
     ctx.closePath();
     ctx.stroke();
-    referenceCorners.forEach((point) => {
+    referenceCorners.forEach((point, index) => {
+      ctx.font = Math.max(18, inputCanvas.width / 45) + 'px system-ui';
+      ctx.fillText(String(index + 1), point.x + 12, point.y - 12);
       ctx.beginPath();
       ctx.arc(point.x, point.y, Math.max(7, inputCanvas.width / 170), 0, Math.PI * 2);
       ctx.fill();
@@ -257,8 +302,8 @@ function drawInputOverlay() {
     }
   }
 
-  drawLine(ctx, measurePoints.width, '#22c55e', 'szerokość');
-  drawLine(ctx, measurePoints.height, '#f97316', 'wysokość');
+  drawLine(ctx, measurePoints.width, '#22c55e', measuredMm.width ? widthResult.textContent : 'szerokość');
+  drawLine(ctx, measurePoints.height, '#f97316', measuredMm.height ? heightResult.textContent : 'wysokość');
 }
 
 function canvasPointFromEvent(event) {
@@ -269,50 +314,86 @@ function canvasPointFromEvent(event) {
   };
 }
 
-function applyReferenceCorners(corners) {
+function applyReferenceCorners(corners, preserveMeasures = false, automatic = false) {
   const spec = referenceSpec();
-  if (!spec) {
-    setStatus('Podaj poprawne wymiary własnego wzorca.', 'is-error');
-    return;
+  if (!spec) throw new Error('Podaj poprawne wymiary wzorca.');
+  const ordered = spec.key === 'line' ? corners.map((p) => ({ ...p })) : orderCorners(corners);
+  let geometry;
+  if (spec.key === 'line') {
+    if (ordered.length !== 2) throw new Error('Wskaż dwa końce znanego odcinka.');
+    mapImagePointsToReference(ordered, ordered, spec.longSideMm, 0);
+    geometry = { widthMm: spec.longSideMm, heightMm: 0, kind: 'line' };
+  } else {
+    geometry = referenceOutputGeometry(ordered, spec.longSideMm, spec.shortSideMm, 4);
+    if (referenceSidesSwapped) {
+      const width = geometry.widthMm;
+      geometry.widthMm = geometry.heightMm;
+      geometry.heightMm = width;
+    }
+    createReferenceTransform(ordered, geometry.widthMm, geometry.heightMm);
+    const previewScale = Math.min(4, 720 / Math.max(geometry.widthMm, geometry.heightMm));
+    warpedCanvas.width = Math.max(2, Math.round(geometry.widthMm * previewScale));
+    warpedCanvas.height = Math.max(2, Math.round(geometry.heightMm * previewScale));
+    drawBaseImage();
+    warpReference(inputCanvas, ordered, warpedCanvas);
   }
-
-  referenceCorners = orderCorners(corners);
-  activeGeometry = referenceOutputGeometry(
-    referenceCorners,
-    spec.longSideMm,
-    spec.shortSideMm,
-    4,
-  );
-
-  warpedCanvas.width = activeGeometry.widthPixels;
-  warpedCanvas.height = activeGeometry.heightPixels;
-  drawBaseImage();
-  warpReference(inputCanvas, referenceCorners, warpedCanvas);
-
+  referenceCorners = ordered;
+  activeGeometry = geometry;
+  referencePreviewCard.classList.toggle('is-hidden', spec.key === 'line');
+  swapReferenceBtn.classList.toggle('is-hidden', spec.key === 'line' || spec.longSideMm === spec.shortSideMm);
   referencePreviewTitle.textContent = 'Wyprostowany wzorzec: ' + spec.label;
-  calibrationSummary.textContent =
-    'Kalibracja: ' + spec.label + ', ' +
-    activeGeometry.widthMm.toFixed(2) + ' × ' +
-    activeGeometry.heightMm.toFixed(2) + ' mm, orientacja ' +
-    activeGeometry.orientation + '.';
-
+  calibrationSummary.textContent = spec.key === 'line'
+    ? 'Skala odcinka: ' + spec.longSideMm.toFixed(2) + ' mm. Bez korekcji perspektywy.'
+    : 'Kalibracja: ' + spec.label + '. Bok 1–2: ' + geometry.widthMm.toFixed(2) +
+      ' mm; bok 2–3: ' + geometry.heightMm.toFixed(2) + ' mm. Sprawdź przypisanie boków na zdjęciu.';
+  measurementWarning.textContent = spec.key === 'line'
+    ? 'Ten tryb zakłada zdjęcie na wprost i jednakową skalę. Nie koryguje perspektywy. Sprawdź drugi znany wymiar; jeśli się nie zgadza, użyj czterech narożników.'
+    : 'Wzorzec i mierzone punkty muszą leżeć na jednej płaszczyźnie. Karta na podłodze nie skaluje ściany. Sprawdź drugi znany wymiar przed użyciem wyniku.';
+  const shortestEdge = Math.min(...ordered.map((p, i) => pointDistance(p, ordered.at((i + 1) % ordered.length))));
+  const relativeEdge = shortestEdge / Math.max(inputCanvas.width, inputCanvas.height);
+  qualityNote.textContent = shortestEdge < 40 || relativeEdge < 0.03
+    ? 'Mały wzorzec zwiększa wpływ błędu punktów. Zrób bliższe zdjęcie albo użyj większego przedmiotu.'
+    : 'Powiększ zdjęcie, aby dokładnie dopasować punkty. Po kalibracji możesz przeciągać narożniki i końce pomiarów.';
   measurementPanel.classList.remove('is-hidden');
   manualCornerMode = false;
-  manualCorners = [];
-  measurePoints = { width: [], height: [] };
-  measuredMm = { width: null, height: null };
-  widthResult.textContent = '—';
-  heightResult.textContent = '—';
-  areaResult.textContent = '—';
-  sendAreaBtn.disabled = true;
-  canvasHelp.textContent = 'Wybierz szerokość albo wysokość, następnie kliknij dwa końce mierzonego odcinka na zdjęciu.';
-  setStatus('Wzorzec skalibrowany. Możesz teraz mierzyć odcinki na tej samej płaszczyźnie.', 'is-success');
+  manualCorners = Array.of();
+  measureMode = null;
+  if (!preserveMeasures) {
+    measurePoints = { width: Array.of(), height: Array.of() };
+    measuredMm = { width: null, height: null };
+    widthResult.textContent = '—';
+    heightResult.textContent = '—';
+    areaResult.textContent = '—';
+    sendAreaBtn.disabled = true;
+  } else {
+    for (const key of Array.of('width', 'height')) {
+      if (measurePoints[key].length === 2) measureDistance(key);
+    }
+  }
+  canvasHelp.textContent = 'Wybierz szerokość albo wysokość i wskaż dwa końce odcinka. Punkty możesz przeciągać.';
+  setStatus(automatic ? 'Automat proponuje wzorzec. Sprawdź zaznaczony prostokąt i przypisanie boków przed pomiarem.'
+    : 'Wzorzec skalibrowany. Możesz mierzyć odcinki na tej samej płaszczyźnie.', automatic ? 'is-warning' : 'is-success');
+  inputCanvas.classList.add('is-interactive');
+  syncImageControls();
   drawInputOverlay();
 }
+
+swapReferenceBtn.addEventListener('click', () => {
+  calibrationVersion++;
+  const old = referenceSidesSwapped;
+  try {
+    referenceSidesSwapped = !old;
+    applyReferenceCorners(referenceCorners, true);
+  } catch (error) {
+    referenceSidesSwapped = old;
+    setStatus(error.message, 'is-error');
+  }
+});
 
 function handleImageInput(event) {
   const file = event.target.files.item(0);
   if (file) loadImageFile(file);
+  event.target.value = '';
 }
 
 fileInput.addEventListener('change', handleImageInput);
@@ -323,11 +404,13 @@ sampleBtn.addEventListener('click', async () => {
   updateReferenceUi();
   sampleBtn.disabled = true;
   setStatus('Wczytuję przykładowe zdjęcie A4…');
+  const version = calibrationVersion;
 
   try {
     const response = await fetch('sample-a4.jpg');
     if (!response.ok) throw new Error('HTTP ' + response.status);
     const blob = await response.blob();
+    if (version !== calibrationVersion) return;
     loadImageFile(new File([blob], 'wzorzec-miarka-a4.jpg', { type: blob.type }));
   } catch (error) {
     console.error(error);
@@ -338,74 +421,84 @@ sampleBtn.addEventListener('click', async () => {
 });
 
 autoBtn.addEventListener('click', async () => {
-  if (!currentImage) {
-    setStatus('Najpierw wybierz zdjęcie z urządzenia.', 'is-warning');
-    return;
-  }
-
+  if (!currentImage || autoRunning) return;
   const spec = referenceSpec();
-  if (!spec) {
-    setStatus('Podaj poprawne wymiary własnego wzorca.', 'is-error');
+  if (!spec || spec.key === 'line') {
+    setStatus('Podaj poprawne wymiary prostokątnego wzorca albo wybierz tryb ręczny odcinka.', 'is-warning');
     return;
   }
-
-  autoBtn.disabled = true;
-  autoBtn.textContent = 'Wykrywam wzorzec…';
-  setStatus('Szukam prostokąta o proporcjach wybranego wzorca…');
-
+  const version = calibrationVersion;
+  const image = currentImage;
+  autoRunning = true;
+  syncImageControls();
+  autoBtn.textContent = 'Uruchamiam automat…';
+  setStatus('Uruchamiam automatyczne wykrywanie. Pomiar ręczny jest dostępny od razu.');
   try {
-    setStatus('Uruchamiam moduł pomiarowy…');
     await ensureOpenCv();
-    if (typeof cv === 'undefined' || !cv.imread || typeof detectReference !== 'function' || typeof warpReference !== 'function') {
-      throw new Error('OpenCV nie jest gotowe.');
-    }
-    drawBaseImage();
-    const targetRatio = spec.longSideMm / spec.shortSideMm;
-    const corners = await detectReference(inputCanvas, targetRatio, {
-      minAreaShare: spec.minAreaShare,
-      aspectTolerance: spec.aspectTolerance,
+    if (version !== calibrationVersion || image !== currentImage) return;
+    setStatus('Szukam prostokąta. Sprawdź potem, czy zaznaczony wzorzec jest właściwy.');
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    if (version !== calibrationVersion || image !== currentImage) return;
+    const scan = document.createElement('canvas');
+    const scale = Math.min(1, 1200 / Math.max(inputCanvas.width, inputCanvas.height));
+    scan.width = Math.max(1, Math.round(inputCanvas.width * scale));
+    scan.height = Math.max(1, Math.round(inputCanvas.height * scale));
+    scan.getContext('2d').drawImage(currentImage, 0, 0, scan.width, scan.height);
+    const corners = await detectReference(scan, spec.longSideMm / spec.shortSideMm, {
+      minAreaShare: spec.minAreaShare, aspectTolerance: spec.aspectTolerance,
     });
-
+    if (version !== calibrationVersion || image !== currentImage) return;
     if (!corners) {
-      setStatus('Automat nie znalazł wiarygodnego wzorca. Użyj trybu ręcznego i wskaż jego cztery narożniki.', 'is-warning');
+      setStatus('Automat nie znalazł wzorca. Wskaż jego cztery narożniki ręcznie.', 'is-warning');
       return;
     }
-
-    applyReferenceCorners(corners);
+    referenceSidesSwapped = false;
+    applyReferenceCorners(corners.map((p) => ({ x: p.x * inputCanvas.width / scan.width, y: p.y * inputCanvas.height / scan.height })), false, true);
   } catch (error) {
     console.error(error);
-    setStatus('Nie udało się uruchomić automatu. Tryb ręczny nadal działa i możesz wskazać cztery narożniki.', 'is-error');
+    if (version === calibrationVersion && image === currentImage) {
+      setStatus('Nie udało się uruchomić automatu. Wskaż wzorzec ręcznie — ten tryb nie wymaga OpenCV.', 'is-error');
+    }
   } finally {
-    autoBtn.disabled = false;
+    autoRunning = false;
     autoBtn.textContent = 'Wykryj wzorzec automatycznie';
+    syncImageControls();
   }
 });
 
 manualCornersBtn.addEventListener('click', () => {
   if (!currentImage) return;
+  if (!referenceSpec()) {
+    setStatus('Najpierw wpisz poprawne wymiary wybranego wzorca.', 'is-error');
+    return;
+  }
   resetCalibration();
   manualCornerMode = true;
   manualCorners = [];
-  canvasHelp.textContent = 'Kliknij cztery narożniki wzorca. Kolejność nie ma znaczenia.';
-  setStatus('Tryb ręczny: wskaż cztery narożniki wzorca na zdjęciu.', 'is-warning');
+  const count = selectedReferenceType() === 'line' ? 2 : 4;
+  canvasHelp.textContent = count === 2 ? 'Wskaż dwa końce znanego odcinka.' : 'Wskaż cztery narożniki widocznej powierzchni. Kolejność nie ma znaczenia.';
+  setStatus('Tryb ręczny: pozostało ' + count + ' punktów. Powiększ zdjęcie dla dokładności.', 'is-warning');
   inputCanvas.classList.add('is-interactive');
+  syncImageControls();
+  inputFrame.scrollIntoView({ block: 'center', behavior: 'instant' });
 });
 
 function measureDistance(key) {
   const points = measurePoints[key];
   if (!referenceCorners || !activeGeometry || points.length !== 2) return;
 
-  const mapped = mapImagePointsToReference(
-    referenceCorners,
-    points,
-    activeGeometry.widthMm,
-    activeGeometry.heightMm,
-  );
-  const distanceMm = Math.hypot(
-    mapped[1].x - mapped[0].x,
-    mapped[1].y - mapped[0].y,
-  );
-
+  let distanceMm;
+  try {
+    const mapped = mapImagePointsToReference(referenceCorners, points, activeGeometry.widthMm, activeGeometry.heightMm);
+    distanceMm = Math.hypot(mapped.at(1).x - mapped.at(0).x, mapped.at(1).y - mapped.at(0).y);
+    if (!Number.isFinite(distanceMm) || distanceMm <= 0) throw new Error('Wskaż dwa różne końce odcinka.');
+  } catch (error) {
+    measuredMm[key] = null;
+    (key === 'width' ? widthResult : heightResult).textContent = '—';
+    updateArea();
+    setStatus(error.message, 'is-error');
+    return false;
+  }
   measuredMm[key] = distanceMm;
   const target = key === 'width' ? widthResult : heightResult;
   target.textContent = distanceMm >= 1000
@@ -413,6 +506,7 @@ function measureDistance(key) {
     : distanceMm.toFixed(1) + ' mm';
 
   updateArea();
+  return true;
 }
 
 function updateArea() {
@@ -423,6 +517,11 @@ function updateArea() {
   }
 
   const areaM2 = measuredMm.width * measuredMm.height / 1000000;
+  if (!Number.isFinite(areaM2) || areaM2 <= 0) {
+    areaResult.textContent = '—';
+    sendAreaBtn.disabled = true;
+    return;
+  }
   areaResult.textContent = areaM2.toFixed(2) + ' m²';
   sendAreaBtn.dataset.area = areaM2.toFixed(3);
   sendAreaBtn.disabled = false;
@@ -434,15 +533,19 @@ function beginMeasure(key) {
     return;
   }
 
+  calibrationVersion++;
   measureMode = key;
   measurePoints[key] = [];
   measuredMm[key] = null;
+  (key === 'width' ? widthResult : heightResult).textContent = '—';
   updateArea();
   inputCanvas.classList.add('is-interactive');
   const label = key === 'width' ? 'szerokości' : 'wysokości';
   canvasHelp.textContent = 'Kliknij pierwszy i drugi koniec ' + label + '.';
   setStatus('Pomiar ' + label + ': wskaż dwa punkty na zdjęciu.', 'is-warning');
+  syncImageControls();
   drawInputOverlay();
+  inputFrame.scrollIntoView({ block: 'center', behavior: 'instant' });
 }
 
 measureWidthBtn.addEventListener('click', () => beginMeasure('width'));
@@ -456,41 +559,127 @@ clearMeasuresBtn.addEventListener('click', () => {
   heightResult.textContent = '—';
   areaResult.textContent = '—';
   sendAreaBtn.disabled = true;
-  inputCanvas.classList.remove('is-interactive');
+  inputCanvas.classList.add('is-interactive');
   canvasHelp.textContent = 'Wybierz szerokość albo wysokość, następnie kliknij dwa końce mierzonego odcinka na zdjęciu.';
+  syncImageControls();
   drawInputOverlay();
 });
 
-inputCanvas.addEventListener('click', (event) => {
-  if (!currentImage) return;
-  const point = canvasPointFromEvent(event);
-
+function addCanvasPoint(point) {
   if (manualCornerMode) {
     manualCorners.push(point);
-    drawInputOverlay();
-
-    if (manualCorners.length === 4) {
-      const corners = orderCorners(manualCorners);
-      applyReferenceCorners(corners);
-      inputCanvas.classList.remove('is-interactive');
+    const count = selectedReferenceType() === 'line' ? 2 : 4;
+    if (manualCorners.length === count) {
+      try { applyReferenceCorners(manualCorners); }
+      catch (error) {
+        manualCorners.pop();
+        setStatus(error.message + ' Popraw punkty lub wskaż ostatni narożnik ponownie.', 'is-error');
+      }
+    } else setStatus('Pozostało ' + (count - manualCorners.length) + ' punktów wzorca.', 'is-warning');
+  } else if (measureMode) {
+    const key = measureMode;
+    const points = measurePoints[key];
+    points.push(point);
+    if (points.length === 2) {
+      const valid = measureDistance(key);
+      measureMode = null;
+      if (valid) {
+        canvasHelp.textContent = 'Odcinek zapisany. Możesz przeciągać punkty lub zmierzyć drugi bok.';
+        setStatus('Odcinek zmierzony. Pole powierzchni wymaga szerokości i wysokości prostokąta.', 'is-success');
+      }
     }
-    return;
   }
-
-  if (!measureMode) return;
-
-  const points = measurePoints[measureMode];
-  if (points.length >= 2) points.length = 0;
-  points.push(point);
+  syncImageControls();
   drawInputOverlay();
+}
 
-  if (points.length === 2) {
-    measureDistance(measureMode);
-    measureMode = null;
-    inputCanvas.classList.remove('is-interactive');
-    canvasHelp.textContent = 'Pomiar zapisany. Możesz zmierzyć drugi bok albo powtórzyć pomiar.';
-    setStatus('Odcinek zmierzony. Dla pola powierzchni zmierz jeszcze drugi bok.', 'is-success');
+inputCanvas.addEventListener('pointerdown', (event) => {
+  if (!currentImage || (event.pointerType === 'mouse' && event.button !== 0)) return;
+  const point = canvasPointFromEvent(event);
+  const threshold = 14 * inputCanvas.width / inputCanvas.getBoundingClientRect().width;
+  let handle = null;
+  if (!manualCornerMode && !measureMode) {
+    const groups = Array.of({ key: 'reference', points: referenceCorners || Array.of() },
+      { key: 'width', points: measurePoints.width }, { key: 'height', points: measurePoints.height });
+    let best = threshold;
+    for (const group of groups) group.points.forEach((candidate, index) => {
+      const distance = pointDistance(candidate, point);
+      if (distance < best) { best = distance; handle = { key: group.key, index, original: { ...candidate } }; }
+    });
   }
+  pointerAction = { handle, clientX: event.clientX, clientY: event.clientY,
+    scrollLeft: inputFrame.scrollLeft, scrollTop: inputFrame.scrollTop, moved: false };
+  if (handle) calibrationVersion++;
+  inputCanvas.setPointerCapture(event.pointerId);
+});
+
+inputCanvas.addEventListener('pointermove', (event) => {
+  if (!pointerAction) return;
+  const action = pointerAction;
+  const dx = event.clientX - action.clientX, dy = event.clientY - action.clientY;
+  if (Math.hypot(dx, dy) > 5) action.moved = true;
+  if (action.handle) {
+    const point = canvasPointFromEvent(event);
+    point.x = Math.max(0, Math.min(inputCanvas.width - 1, point.x));
+    point.y = Math.max(0, Math.min(inputCanvas.height - 1, point.y));
+    const points = action.handle.key === 'reference' ? referenceCorners : measurePoints[action.handle.key];
+    points.splice(action.handle.index, 1, point);
+    drawInputOverlay();
+  } else if (action.moved) {
+    inputFrame.scrollLeft = action.scrollLeft - dx;
+    inputFrame.scrollTop = action.scrollTop - dy;
+  }
+});
+
+function finishPointer(event, cancelled = false) {
+  if (!pointerAction) return;
+  const action = pointerAction;
+  pointerAction = null;
+  if (action.handle) {
+    const handle = action.handle;
+    const points = handle.key === 'reference' ? referenceCorners : measurePoints[handle.key];
+    if (cancelled) points.splice(handle.index, 1, handle.original);
+    try {
+      if (handle.key === 'reference') applyReferenceCorners(referenceCorners, true);
+      else measureDistance(handle.key);
+    } catch (error) {
+      points.splice(handle.index, 1, handle.original);
+      applyReferenceCorners(referenceCorners, true);
+      setStatus(error.message, 'is-error');
+    }
+    drawInputOverlay();
+  } else if (!cancelled && !action.moved) addCanvasPoint(canvasPointFromEvent(event));
+  if (inputCanvas.hasPointerCapture(event.pointerId)) inputCanvas.releasePointerCapture(event.pointerId);
+}
+inputCanvas.addEventListener('pointerup', (event) => finishPointer(event));
+inputCanvas.addEventListener('pointercancel', (event) => finishPointer(event, true));
+
+exportPhotoBtn.addEventListener('click', () => {
+  if (!currentImage || !activeGeometry) return;
+  const output = document.createElement('canvas');
+  const captionHeight = Math.max(130, Math.round(inputCanvas.width / 9));
+  output.width = inputCanvas.width;
+  output.height = inputCanvas.height + captionHeight;
+  const ctx = output.getContext('2d');
+  drawInputOverlay();
+  ctx.drawImage(inputCanvas, 0, 0);
+  ctx.fillStyle = '#08111f';
+  ctx.fillRect(0, inputCanvas.height, output.width, captionHeight);
+  ctx.fillStyle = '#f8fafc';
+  ctx.font = Math.max(16, Math.round(output.width / 55)) + 'px system-ui';
+  const lines = Array.of('Profito — pomiar orientacyjny ze zdjęcia',
+    'Szerokość: ' + widthResult.textContent + ' | Wysokość: ' + heightResult.textContent + ' | Pole: ' + areaResult.textContent,
+    'Wzorzec: ' + referenceSpec().label + ' | Jedna płaszczyzna; wynik sprawdź miarką.');
+  lines.forEach((line, index) => ctx.fillText(line, 18, inputCanvas.height + captionHeight * (index + 1) / 4, output.width - 36));
+  output.toBlob((blob) => {
+    if (!blob) { setStatus('Nie udało się zapisać zdjęcia.', 'is-error'); return; }
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'pomiar-profito.png';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  }, 'image/png');
 });
 
 sendAreaBtn.addEventListener('click', () => {
