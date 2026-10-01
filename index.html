@@ -172,11 +172,11 @@
           <div class="input-group">
             <label for="supplierCountry" data-i18n="country_label">Country</label>
             <select id="supplierCountry" class="country-select" aria-describedby="supplierPrivacy">
-              <option value="GB">United Kingdom</option>
-              <option value="PL">Poland</option>
-              <option value="DE">Germany</option>
-              <option value="FR">France</option>
-              <option value="ES">Spain</option>
+              <option value="GB" data-country-label="GB">United Kingdom</option>
+              <option value="PL" data-country-label="PL">Poland</option>
+              <option value="DE" data-country-label="DE">Germany</option>
+              <option value="FR" data-country-label="FR">France</option>
+              <option value="ES" data-country-label="ES">Spain</option>
             </select>
           </div>
           <div class="input-group supplier-input">
@@ -232,11 +232,11 @@
             <div class="input-group">
               <label for="tradeCountry" data-i18n="country_label">Country</label>
               <select id="tradeCountry" class="country-select">
-                <option value="GB">United Kingdom</option>
-                <option value="PL">Poland</option>
-                <option value="DE">Germany</option>
-                <option value="FR">France</option>
-                <option value="ES">Spain</option>
+                <option value="GB" data-country-label="GB">United Kingdom</option>
+                <option value="PL" data-country-label="PL">Poland</option>
+                <option value="DE" data-country-label="DE">Germany</option>
+                <option value="FR" data-country-label="FR">France</option>
+                <option value="ES" data-country-label="ES">Spain</option>
               </select>
             </div>
             <div class="input-group">
@@ -478,6 +478,48 @@
       planner_brief_text: 'Projet de carrelage d’environ {area} m², niveau de matériaux {tier}. Fourchette indicative matériaux et main-d’œuvre : {range}. Le devis final dépend de la préparation, de la dépose, de l’état du support, de l’étanchéité, du motif, de l’accès et de l’évacuation des déchets.', planner_priority_text: 'Fourchette indicative {range}'
     };
 
+    const countryTranslationAdditions = {
+      en: {
+        country_label: 'Country', country_GB: 'United Kingdom', country_PL: 'Poland', country_DE: 'Germany', country_FR: 'France', country_ES: 'Spain',
+        suppliers_text: 'Choose a country and enter a postcode, city or area. Profito.system creates local map searches for useful building-supply categories.',
+        suppliers_privacy: 'The country and area stay in your browser and are used only to build map-search links. Profito.system does not store them.',
+        pricing_scope: 'Budget figures are currently a UK benchmark in GBP. The country setting changes local searches, not the pricing model.',
+        supplier_category_materials: 'Building materials', supplier_category_tiles: 'Tiles', supplier_category_diy: 'DIY & home improvement', supplier_category_paint: 'Paint & decorating', supplier_category_plumbing: 'Plumbing supplies', supplier_category_tools: 'Tools'
+      },
+      pl: {
+        country_label: 'Kraj', country_GB: 'Wielka Brytania', country_PL: 'Polska', country_DE: 'Niemcy', country_FR: 'Francja', country_ES: 'Hiszpania',
+        suppliers_text: 'Wybierz kraj i wpisz kod pocztowy, miasto lub okolicę. Profito.system utworzy lokalne wyszukiwania przydatnych kategorii sklepów budowlanych.',
+        suppliers_privacy: 'Kraj i okolica pozostają w przeglądarce i służą tylko do tworzenia linków wyszukiwania. Profito.system ich nie zapisuje.',
+        pricing_scope: 'Kwoty budżetowe są obecnie brytyjskim benchmarkiem w GBP. Wybór kraju zmienia lokalne wyszukiwanie, a nie model cenowy.',
+        supplier_category_materials: 'Materiały budowlane', supplier_category_tiles: 'Płytki', supplier_category_diy: 'Dom i remont', supplier_category_paint: 'Farby i dekoracja', supplier_category_plumbing: 'Hydraulika', supplier_category_tools: 'Narzędzia'
+      },
+      de: {
+        country_label: 'Land', country_GB: 'Vereinigtes Königreich', country_PL: 'Polen', country_DE: 'Deutschland', country_FR: 'Frankreich', country_ES: 'Spanien',
+        suppliers_text: 'Wähle ein Land und gib Postleitzahl, Stadt oder Gebiet ein. Profito.system erstellt lokale Kartensuchen für nützliche Baustoffkategorien.',
+        suppliers_privacy: 'Land und Gebiet bleiben im Browser und werden nur zum Erstellen von Kartensuchlinks verwendet. Profito.system speichert sie nicht.',
+        pricing_scope: 'Die Budgetwerte sind derzeit ein britischer Richtwert in GBP. Die Länderauswahl ändert die lokale Suche, nicht das Preismodell.',
+        supplier_category_materials: 'Baustoffe', supplier_category_tiles: 'Fliesen', supplier_category_diy: 'Baumarkt & Heimwerken', supplier_category_paint: 'Farben & Dekoration', supplier_category_plumbing: 'Sanitärbedarf', supplier_category_tools: 'Werkzeuge'
+      },
+      fr: {
+        country_label: 'Pays', country_GB: 'Royaume-Uni', country_PL: 'Pologne', country_DE: 'Allemagne', country_FR: 'France', country_ES: 'Espagne',
+        suppliers_text: 'Choisissez un pays et saisissez un code postal, une ville ou une zone. Profito.system crée des recherches locales par catégories utiles de fournisseurs du bâtiment.',
+        suppliers_privacy: 'Le pays et la zone restent dans votre navigateur et servent uniquement à créer des liens de recherche cartographique. Profito.system ne les stocke pas.',
+        pricing_scope: 'Les montants budgétaires sont actuellement une référence britannique en GBP. Le choix du pays modifie les recherches locales, pas le modèle de prix.',
+        supplier_category_materials: 'Matériaux de construction', supplier_category_tiles: 'Carrelage', supplier_category_diy: 'Bricolage & maison', supplier_category_paint: 'Peinture & décoration', supplier_category_plumbing: 'Fournitures plomberie', supplier_category_tools: 'Outils'
+      },
+      es: {
+        country_label: 'País', country_GB: 'Reino Unido', country_PL: 'Polonia', country_DE: 'Alemania', country_FR: 'Francia', country_ES: 'España',
+        suppliers_text: 'Elige un país e introduce un código postal, ciudad o zona. Profito.system crea búsquedas locales por categorías útiles de suministros de construcción.',
+        suppliers_privacy: 'El país y la zona permanecen en tu navegador y solo se usan para crear enlaces de búsqueda en el mapa. Profito.system no los guarda.',
+        pricing_scope: 'Las cifras de presupuesto son actualmente una referencia británica en GBP. El país cambia las búsquedas locales, no el modelo de precios.',
+        supplier_category_materials: 'Materiales de construcción', supplier_category_tiles: 'Azulejos', supplier_category_diy: 'Bricolaje y hogar', supplier_category_paint: 'Pintura y decoración', supplier_category_plumbing: 'Suministros de fontanería', supplier_category_tools: 'Herramientas'
+      }
+    };
+
+    for (const lang of Object.keys(countryTranslationAdditions)) {
+      Object.assign(translations[lang], countryTranslationAdditions[lang]);
+    }
+
     let currentLang = 'en';
 
     function t(key) {
@@ -530,6 +572,10 @@
       document.querySelectorAll('[data-i18n-content]').forEach((element) => {
         const value = translations[currentLang][element.dataset.i18nContent];
         if (value) element.setAttribute('content', value);
+      });
+      document.querySelectorAll('[data-country-label]').forEach((option) => {
+        const value = t('country_' + option.dataset.countryLabel);
+        if (value) option.textContent = value;
       });
       document.querySelectorAll('.lang-btn').forEach((button) => {
         const active = button.dataset.lang === currentLang;
