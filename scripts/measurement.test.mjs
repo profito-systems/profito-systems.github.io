@@ -223,6 +223,9 @@ function appHarness() {
     console, setTimeout, clearTimeout,
     document: {
       getElementById: element,
+      createElement: (tag) => tag === 'canvas'
+        ? { width: 0, height: 0, getContext: () => canvasContext }
+        : element('created-' + tag),
       querySelector: () => ({ value: 'a4' }),
       querySelectorAll: () => Array.of(),
     },
@@ -271,7 +274,7 @@ test('oversized selection cancels in-flight image callbacks and a later valid ph
   app.context.loadImageFile({ name: 'valid.jpg', size: 1000 });
   const valid = app.images.at(-1);
   valid.onload();
-  assert.equal(app.evaluate('currentImage'), valid);
+  assert.equal(app.evaluate("currentImage && typeof currentImage.getContext === 'function'"), true);
   assert.equal(app.element('manualCornersBtn').disabled, false);
   assert.equal(app.element('canvases').classList.contains('is-hidden'), false);
   assert.equal(app.element('sendAreaBtn').disabled, true);
