@@ -787,6 +787,14 @@
       es: 'es-ES'
     };
 
+    const tradeSearchTerms = {
+      GB: { tiler: 'tiler', painter: 'painter decorator', flooring: 'flooring installer', repairs: 'handyman property repairs' },
+      PL: { tiler: 'glazurnik', painter: 'malarz', flooring: 'montaż podłóg', repairs: 'naprawy remontowe' },
+      DE: { tiler: 'Fliesenleger', painter: 'Maler', flooring: 'Bodenleger', repairs: 'Handwerker Reparaturen' },
+      FR: { tiler: 'carreleur', painter: 'peintre décorateur', flooring: 'poseur de sol', repairs: 'réparations habitat' },
+      ES: { tiler: 'alicatador', painter: 'pintor decorador', flooring: 'instalador de suelos', repairs: 'reparaciones hogar' }
+    };
+
     function formatTranslation(key, values = {}) {
       let text = t(key);
       for (const entry of Object.entries(values)) {
@@ -866,9 +874,11 @@
     });
 
     document.getElementById('tradeSearchButton').addEventListener('click', function () {
-      const trade = document.getElementById('tradeType').value;
-      const area = document.getElementById('tradePostcode').value.trim() || 'West London';
-      const query = trade + ' near ' + area + ' UK';
+      const tradeKey = document.getElementById('tradeType').value;
+      const country = countryData[currentCountry];
+      const area = document.getElementById('tradePostcode').value.trim() || country.defaultArea;
+      const searchTerm = tradeSearchTerms[currentCountry]?.[tradeKey] || tradeSearchTerms.GB[tradeKey] || tradeKey;
+      const query = searchTerm + ' near ' + area + ', ' + country.searchName;
       window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank', 'noopener,noreferrer');
     });
 
