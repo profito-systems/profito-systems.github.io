@@ -11,20 +11,21 @@
   <header class="navbar">
     <a class="logo" href="#top" aria-label="Profito.system home">Profito.system</a>
     <nav aria-label="Main navigation">
-      <a href="#planner">Plan project</a>
+      <a href="#planner" data-i18n="nav_planner">Plan project</a>
       <a href="#services" data-i18n="nav_services">Services</a>
       <a href="#calculator" data-i18n="nav_calculator">Calculator</a>
       <a href="/miarka/" data-i18n="nav_miarka">Photo Measure</a>
       <a href="#suppliers" data-i18n="nav_suppliers">Local suppliers</a>
       <a href="#portfolio" data-i18n="nav_portfolio">Portfolio</a>
-      <a href="#find-trade">Find a trade</a>
+      <a href="#find-trade" data-i18n="nav_trade">Find a trade</a>
       <a href="#quote" data-i18n="nav_quote">Quote</a>
     </nav>
-    <div class="lang-switcher" aria-label="Language selector">
+    <div class="lang-switcher" aria-label="Language selector" data-i18n-aria="language_selector">
       <button class="lang-btn active" type="button" data-lang="en">EN</button>
       <button class="lang-btn" type="button" data-lang="pl">PL</button>
-      <button class="lang-btn" type="button" data-lang="es">ES</button>
       <button class="lang-btn" type="button" data-lang="de">DE</button>
+      <button class="lang-btn" type="button" data-lang="fr">FR</button>
+      <button class="lang-btn" type="button" data-lang="es">ES</button>
     </div>
   </header>
 
@@ -34,83 +35,83 @@
       <h1 data-i18n="hero_title">From a real measurement to a clear plan</h1>
       <p data-i18n="hero_text">Profito.system combines practical property work with simple browser tools for measuring, estimating and finding nearby material suppliers across West London.</p>
       <div class="hero-actions">
-        <a class="btn-primary" href="#planner">Plan a project</a>
-        <a class="btn-secondary" href="#portfolio">See real work</a>
+        <a class="btn-primary" href="#planner" data-i18n="hero_plan">Plan a project</a>
+        <a class="btn-secondary" href="#portfolio" data-i18n="hero_work">See real work</a>
       </div>
     </section>
 
 
     <section id="planner" class="app-module">
       <div class="section-heading">
-        <p class="eyebrow">Project planner · working preview</p>
-        <h2>Understand the job before asking for a quote</h2>
-        <p>Start with the area, choose a material level and see an indicative split between tiles, fixing materials and labour. Then compare nearby suppliers or prepare a project brief.</p>
+        <p class="eyebrow" data-i18n="planner_eyebrow">Project planner · working preview</p>
+        <h2 data-i18n="planner_title">Understand the job before asking for a quote</h2>
+        <p data-i18n="planner_text">Start with the area, choose a material level and see an indicative split between tiles, fixing materials and labour. Then compare nearby suppliers or prepare a project brief.</p>
       </div>
 
       <div class="planner-layout">
         <form id="tilePlannerForm" class="card planner-card">
-          <div class="planner-step"><span>1</span><div><strong>Choose the job</strong><p>Tiling is live in this preview. Painting, flooring and repairs can follow the same pattern.</p></div></div>
+          <div class="planner-step"><span>1</span><div><strong data-i18n="planner_step_job_title">Choose the job</strong><p data-i18n="planner_step_job_text">Tiling is live in this preview. Painting, flooring and repairs can follow the same pattern.</p></div></div>
 
           <div class="form-grid">
             <div class="input-group">
-              <label for="plannerJob">Project type</label>
+              <label for="plannerJob" data-i18n="planner_project_type">Project type</label>
               <select id="plannerJob">
-                <option value="tiling">Replace or install tiles</option>
-                <option value="painting" disabled>Painting · next</option>
-                <option value="flooring" disabled>Flooring · next</option>
-                <option value="repairs" disabled>Repairs · next</option>
+                <option value="tiling" data-i18n="planner_job_tiling">Replace or install tiles</option>
+                <option value="painting" disabled data-i18n="planner_job_painting">Painting · next</option>
+                <option value="flooring" disabled data-i18n="planner_job_flooring">Flooring · next</option>
+                <option value="repairs" disabled data-i18n="planner_job_repairs">Repairs · next</option>
               </select>
             </div>
             <div class="input-group">
-              <label for="plannerArea">Area in m²</label>
+              <label for="plannerArea" data-i18n="planner_area">Area in m²</label>
               <input id="plannerArea" type="number" min="0.5" step="0.1" value="8" required>
             </div>
           </div>
 
-          <div class="planner-step"><span>2</span><div><strong>Choose the material level</strong><p>The ranges are indicative examples, not a live supplier quote.</p></div></div>
+          <div class="planner-step"><span>2</span><div><strong data-i18n="planner_step_material_title">Choose the material level</strong><p data-i18n="planner_step_material_text">The ranges are indicative examples, not a live supplier quote.</p></div></div>
 
-          <div class="tier-grid" role="radiogroup" aria-label="Tile price level">
+          <div class="tier-grid" role="radiogroup" aria-label="Tile price level" data-i18n-aria="planner_tier_aria">
             <label class="tier-card">
               <input type="radio" name="tileTier" value="economy">
-              <span><strong>Economy</strong><small>about £12–£25 per m²</small></span>
+              <span><strong data-i18n="tier_economy">Economy</strong><small data-i18n="tier_economy_price">about £12–£25 per m²</small></span>
             </label>
             <label class="tier-card">
               <input type="radio" name="tileTier" value="standard" checked>
-              <span><strong>Standard</strong><small>about £25–£50 per m²</small></span>
+              <span><strong data-i18n="tier_standard">Standard</strong><small data-i18n="tier_standard_price">about £25–£50 per m²</small></span>
             </label>
             <label class="tier-card">
               <input type="radio" name="tileTier" value="premium">
-              <span><strong>Premium</strong><small>about £50–£100 per m²</small></span>
+              <span><strong data-i18n="tier_premium">Premium</strong><small data-i18n="tier_premium_price">about £50–£100 per m²</small></span>
             </label>
           </div>
 
           <div class="form-grid">
             <div class="input-group">
-              <label for="plannerPostcode">Postcode or area</label>
+              <label for="plannerPostcode" data-i18n="planner_postcode">Postcode or area</label>
               <input id="plannerPostcode" value="TW8" autocomplete="postal-code">
             </div>
             <div class="input-group planner-measure">
-              <span class="field-label">Need the area?</span>
-              <a class="btn-secondary" href="/miarka/">Measure from a photo</a>
+              <span class="field-label" data-i18n="planner_need_area">Need the area?</span>
+              <a class="btn-secondary" href="/miarka/" data-i18n="planner_measure_photo">Measure from a photo</a>
             </div>
           </div>
 
-          <label class="planner-check"><input id="plannerWaste" type="checkbox" checked> Include 10% tile allowance for cuts and waste</label>
-          <button class="btn-primary" type="submit">Estimate tiling budget</button>
+          <label class="planner-check"><input id="plannerWaste" type="checkbox" checked> <span data-i18n="planner_waste">Include 10% tile allowance for cuts and waste</span></label>
+          <button class="btn-primary" type="submit" data-i18n="planner_estimate_button">Estimate tiling budget</button>
         </form>
 
         <aside class="card estimate-card" aria-live="polite">
-          <p class="eyebrow">Indicative budget</p>
-          <h3 id="plannerEstimateTitle">Enter the project details</h3>
+          <p class="eyebrow" data-i18n="estimate_eyebrow">Indicative budget</p>
+          <h3 id="plannerEstimateTitle" data-i18n="estimate_title">Enter the project details</h3>
           <div id="plannerEstimate" class="estimate-breakdown">
-            <p>Use the planner to see a simple material and labour range.</p>
+            <p data-i18n="estimate_empty">Use the planner to see a simple material and labour range.</p>
           </div>
-          <p class="estimate-note">Preparation, removal of old finishes, levelling, waterproofing, parking, waste disposal, unusual patterns and hidden defects can change the final quote.</p>
+          <p class="estimate-note" data-i18n="estimate_note">Preparation, removal of old finishes, levelling, waterproofing, parking, waste disposal, unusual patterns and hidden defects can change the final quote.</p>
           <div class="estimate-actions">
-            <button id="plannerSuppliers" class="btn-secondary" type="button">Compare nearby suppliers</button>
-            <a class="btn-primary" href="#quote">Prepare a project brief</a>
+            <button id="plannerSuppliers" class="btn-secondary" type="button" data-i18n="estimate_suppliers">Compare nearby suppliers</button>
+            <a class="btn-primary" href="#quote" data-i18n="estimate_brief">Prepare a project brief</a>
           </div>
-          <p class="source-note">Price context: current UK examples from <a href="https://www.checkatrade.com/blog/cost-guides/tiling-cost/" target="_blank" rel="noopener noreferrer">Checkatrade</a>, <a href="https://www.wickes.co.uk/Products/Tiles/All-Tiles/c/1070003" target="_blank" rel="noopener noreferrer">Wickes</a> and <a href="https://www.toppstiles.co.uk/wall-tiles" target="_blank" rel="noopener noreferrer">Topps Tiles</a>.</p>
+          <p class="source-note"><span data-i18n="source_note">Price context: current UK examples from</span> <a href="https://www.checkatrade.com/blog/cost-guides/tiling-cost/" target="_blank" rel="noopener noreferrer">Checkatrade</a>, <a href="https://www.wickes.co.uk/Products/Tiles/All-Tiles/c/1070003" target="_blank" rel="noopener noreferrer">Wickes</a> <span data-i18n="source_and">and</span> <a href="https://www.toppstiles.co.uk/wall-tiles" target="_blank" rel="noopener noreferrer">Topps Tiles</a>.</p>
         </aside>
       </div>
     </section>
@@ -185,57 +186,57 @@
         <p data-i18n="portfolio_text">Selected photographs from the existing Profito project archive, used as real examples of completed and in-progress work.</p>
       </div>
       <div class="gallery">
-        <figure><img src="assets/work_013.jpg" loading="lazy" alt="Interior finishing detail"><figcaption data-i18n="gallery_1">Interior finish</figcaption></figure>
-        <figure><img src="assets/work_167.jpg" loading="lazy" alt="Completed interior"><figcaption data-i18n="gallery_2">Interior project</figcaption></figure>
-        <figure><img src="assets/work_208.jpg" loading="lazy" alt="Installation materials"><figcaption data-i18n="gallery_3">Installation</figcaption></figure>
-        <figure><img src="assets/work_249.jpg" loading="lazy" alt="Completed kitchen space"><figcaption data-i18n="gallery_4">Completed space</figcaption></figure>
-        <figure><img src="assets/work_101.jpg" loading="lazy" alt="Construction work detail"><figcaption data-i18n="gallery_5">Building work</figcaption></figure>
-        <figure><img src="assets/work_106.jpg" loading="lazy" alt="Renovation tools and materials"><figcaption data-i18n="gallery_6">Project preparation</figcaption></figure>
-        <figure><img src="assets/work_111.jpg" loading="lazy" alt="Materials prepared for installation"><figcaption data-i18n="gallery_7">Installation work</figcaption></figure>
-        <figure><img src="assets/work_151.jpg" loading="lazy" alt="Completed project detail"><figcaption data-i18n="gallery_8">Finished result</figcaption></figure>
+        <figure><img src="assets/work_013.jpg" loading="lazy" alt="Interior finishing detail" data-i18n-alt="gallery_1_alt"><figcaption data-i18n="gallery_1">Interior finish</figcaption></figure>
+        <figure><img src="assets/work_167.jpg" loading="lazy" alt="Completed interior" data-i18n-alt="gallery_2_alt"><figcaption data-i18n="gallery_2">Interior project</figcaption></figure>
+        <figure><img src="assets/work_208.jpg" loading="lazy" alt="Installation materials" data-i18n-alt="gallery_3_alt"><figcaption data-i18n="gallery_3">Installation</figcaption></figure>
+        <figure><img src="assets/work_249.jpg" loading="lazy" alt="Completed kitchen space" data-i18n-alt="gallery_4_alt"><figcaption data-i18n="gallery_4">Completed space</figcaption></figure>
+        <figure><img src="assets/work_101.jpg" loading="lazy" alt="Construction work detail" data-i18n-alt="gallery_5_alt"><figcaption data-i18n="gallery_5">Building work</figcaption></figure>
+        <figure><img src="assets/work_106.jpg" loading="lazy" alt="Renovation tools and materials" data-i18n-alt="gallery_6_alt"><figcaption data-i18n="gallery_6">Project preparation</figcaption></figure>
+        <figure><img src="assets/work_111.jpg" loading="lazy" alt="Materials prepared for installation" data-i18n-alt="gallery_7_alt"><figcaption data-i18n="gallery_7">Installation work</figcaption></figure>
+        <figure><img src="assets/work_151.jpg" loading="lazy" alt="Completed project detail" data-i18n-alt="gallery_8_alt"><figcaption data-i18n="gallery_8">Finished result</figcaption></figure>
       </div>
     </section>
 
 
     <section id="find-trade" class="app-module">
       <div class="section-heading">
-        <p class="eyebrow">Local trades · simple first</p>
-        <h2>Find help nearby, or join the future local jobs pilot</h2>
-        <p>The homeowner side works now as a local search. The tradesperson model below is a transparent pilot concept, not a live paid marketplace yet.</p>
+        <p class="eyebrow" data-i18n="trade_eyebrow">Local trades · simple first</p>
+        <h2 data-i18n="trade_title">Find help nearby, or join the future local jobs pilot</h2>
+        <p data-i18n="trade_text">The homeowner side works now as a local search. The tradesperson model below is a transparent pilot concept, not a live paid marketplace yet.</p>
       </div>
       <div class="trade-layout">
         <div class="card">
-          <h3>Find a local tradesperson</h3>
-          <p>Choose the trade and your area. Profito opens a local map search so you can compare nearby options.</p>
+          <h3 data-i18n="trade_find_title">Find a local tradesperson</h3>
+          <p data-i18n="trade_find_text">Choose the trade and your area. Profito opens a local map search so you can compare nearby options.</p>
           <div class="form-grid">
             <div class="input-group">
-              <label for="tradeType">Trade</label>
+              <label for="tradeType" data-i18n="trade_type">Trade</label>
               <select id="tradeType">
-                <option value="tiler">Tiler</option>
-                <option value="painter decorator">Painter & decorator</option>
-                <option value="flooring installer">Flooring installer</option>
-                <option value="handyman property repairs">Property repairs</option>
+                <option value="tiler" data-i18n="trade_tiler">Tiler</option>
+                <option value="painter decorator" data-i18n="trade_painter">Painter & decorator</option>
+                <option value="flooring installer" data-i18n="trade_flooring">Flooring installer</option>
+                <option value="handyman property repairs" data-i18n="trade_repairs">Property repairs</option>
               </select>
             </div>
             <div class="input-group">
-              <label for="tradePostcode">Postcode or area</label>
+              <label for="tradePostcode" data-i18n="trade_postcode">Postcode or area</label>
               <input id="tradePostcode" value="TW8" autocomplete="postal-code">
             </div>
           </div>
-          <button id="tradeSearchButton" class="btn-primary" type="button">Search nearby trades</button>
+          <button id="tradeSearchButton" class="btn-primary" type="button" data-i18n="trade_search">Search nearby trades</button>
         </div>
 
         <div class="card trade-pilot">
-          <p class="eyebrow">For local tradespeople</p>
-          <h3>No subscription maze</h3>
-          <p>The intended Profito model is simple: local jobs that match your trade and area, with no monthly subscription. A fee would apply only when an agreed job is actually won.</p>
+          <p class="eyebrow" data-i18n="trade_for">For local tradespeople</p>
+          <h3 data-i18n="trade_no_subscription">No subscription maze</h3>
+          <p data-i18n="trade_pilot_text">The intended Profito model is simple: local jobs that match your trade and area, with no monthly subscription. A fee would apply only when an agreed job is actually won.</p>
           <ul class="plain-list">
-            <li>No monthly membership planned</li>
-            <li>Choose relevant local work</li>
-            <li>Clear job details before committing</li>
-            <li>Pay-for-success model still to be tested before launch</li>
+            <li data-i18n="trade_list_1">No monthly membership planned</li>
+            <li data-i18n="trade_list_2">Choose relevant local work</li>
+            <li data-i18n="trade_list_3">Clear job details before committing</li>
+            <li data-i18n="trade_list_4">Pay-for-success model still to be tested before launch</li>
           </ul>
-          <a class="btn-secondary" href="#quote">See the project brief format</a>
+          <a class="btn-secondary" href="#quote" data-i18n="trade_brief">See the project brief format</a>
         </div>
       </div>
     </section>
