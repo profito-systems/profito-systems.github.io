@@ -61,7 +61,7 @@ for (const htmlPath of Array.of('index.html', 'miarka/index.html')) {
 }
 
 const indexHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-for (const id of Array.of('calcForm', 'areaResult', 'quoteForm', 'quoteStatus', 'quoteOutput', 'copyQuote')) {
+for (const id of Array.of('calcForm', 'areaResult', 'quoteForm', 'quoteStatus', 'quoteOutput', 'copyQuote', 'supplierCountry', 'tradeCountry')) {
   if (!indexHtml.includes(`id="${id}"`)) throw new Error(`Homepage is missing required element: ${id}`);
 }
 if (/<form[^>]+action=/i.test(indexHtml)) throw new Error('Homepage forms must remain local-only.');
@@ -98,6 +98,19 @@ for (const language of supportedLanguages) {
 if (!localizationScript.includes('navigator.languages')) throw new Error('Homepage must detect the browser preferred language.');
 if (!localizationScript.includes("localStorage.setItem(languageStorageKey")) throw new Error('Homepage must remember a manual language choice.');
 if (!localizationScript.includes('setLanguage(detectPreferredLanguage())')) throw new Error('Homepage must initialize from the preferred language.');
+
+const supportedCountries = Array.of('GB', 'PL', 'DE', 'FR', 'ES');
+for (const country of supportedCountries) {
+  const optionCount = Array.from(indexHtml.matchAll(new RegExp('data-country-label="' + country + '"', 'g'))).length;
+  if (optionCount !== 2) throw new Error(`Homepage must expose ${country} in both country selectors.`);
+  for (const language of supportedLanguages) {
+    if (!translationsForCheck[language]['country_' + country]) throw new Error(`Homepage translation ${language} is missing country label: ${country}`);
+  }
+}
+if (!localizationScript.includes('Intl.DateTimeFormat().resolvedOptions().timeZone')) throw new Error('Homepage must use the browser timezone as a country hint.');
+if (!localizationScript.includes("localStorage.setItem(countryStorageKey")) throw new Error('Homepage must remember a manual country choice.');
+if (!localizationScript.includes('setCountry(detectPreferredCountry())')) throw new Error('Homepage must initialize the service country.');
+if (!localizationScript.includes("category.query + ' near ' + area + ', ' + country.searchName")) throw new Error('Supplier searches must include the selected country.');
 
 const miarkaHtml = fs.readFileSync(path.join(root, 'miarka/index.html'), 'utf8');
 if (miarkaHtml.includes('src="https://docs.opencv.org/')) throw new Error('Production Miarka must lazy-load OpenCV.');
