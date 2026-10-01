@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Profito.system: practical renovation, measurement, estimating and local material sourcing tools for West London.">
-  <title>Profito.system | Renovation, Measurement & Estimating</title>
+  <meta name="description" content="Profito.system: practical renovation, measurement, estimating and local material sourcing tools for West London." data-i18n-content="meta_description">
+  <title data-i18n="meta_title">Profito.system | Renovation, Measurement & Estimating</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="navbar">
     <a class="logo" href="#top" aria-label="Profito.system home">Profito.system</a>
-    <nav aria-label="Main navigation">
+    <nav aria-label="Main navigation" data-i18n-aria="nav_label">
       <a href="#planner" data-i18n="nav_planner">Plan project</a>
       <a href="#services" data-i18n="nav_services">Services</a>
       <a href="#calculator" data-i18n="nav_calculator">Calculator</a>
@@ -344,6 +344,119 @@
       }
     };
 
+    const translationAdditions = {
+      en: {
+        meta_title: 'Profito.system | Renovation, Measurement & Estimating',
+        meta_description: 'Profito.system: practical renovation, measurement, estimating and local material sourcing tools for West London.',
+        language_selector: 'Language selector', nav_label: 'Main navigation', nav_planner: 'Plan project', nav_trade: 'Find a trade',
+        hero_plan: 'Plan a project', hero_work: 'See real work',
+        planner_eyebrow: 'Project planner · working preview', planner_title: 'Understand the job before asking for a quote', planner_text: 'Start with the area, choose a material level and see an indicative split between tiles, fixing materials and labour. Then compare nearby suppliers or prepare a project brief.',
+        planner_step_job_title: 'Choose the job', planner_step_job_text: 'Tiling is live in this preview. Painting, flooring and repairs can follow the same pattern.', planner_project_type: 'Project type',
+        planner_job_tiling: 'Replace or install tiles', planner_job_painting: 'Painting · next', planner_job_flooring: 'Flooring · next', planner_job_repairs: 'Repairs · next', planner_area: 'Area in m²',
+        planner_step_material_title: 'Choose the material level', planner_step_material_text: 'The ranges are indicative examples, not a live supplier quote.', planner_tier_aria: 'Tile price level',
+        tier_economy: 'Economy', tier_standard: 'Standard', tier_premium: 'Premium', tier_economy_price: 'about £12–£25 per m²', tier_standard_price: 'about £25–£50 per m²', tier_premium_price: 'about £50–£100 per m²',
+        planner_postcode: 'Postcode or area', planner_need_area: 'Need the area?', planner_measure_photo: 'Measure from a photo', planner_waste: 'Include 10% tile allowance for cuts and waste', planner_estimate_button: 'Estimate tiling budget',
+        estimate_eyebrow: 'Indicative budget', estimate_title: 'Enter the project details', estimate_empty: 'Use the planner to see a simple material and labour range.', estimate_note: 'Preparation, removal of old finishes, levelling, waterproofing, parking, waste disposal, unusual patterns and hidden defects can change the final quote.', estimate_suppliers: 'Compare nearby suppliers', estimate_brief: 'Prepare a project brief',
+        source_note: 'Price context: current UK examples from', source_and: 'and',
+        trade_eyebrow: 'Local trades · simple first', trade_title: 'Find help nearby, or join the future local jobs pilot', trade_text: 'The homeowner side works now as a local search. The tradesperson model below is a transparent pilot concept, not a live paid marketplace yet.',
+        trade_find_title: 'Find a local tradesperson', trade_find_text: 'Choose the trade and your area. Profito opens a local map search so you can compare nearby options.', trade_type: 'Trade', trade_tiler: 'Tiler', trade_painter: 'Painter & decorator', trade_flooring: 'Flooring installer', trade_repairs: 'Property repairs', trade_postcode: 'Postcode or area', trade_search: 'Search nearby trades',
+        trade_for: 'For local tradespeople', trade_no_subscription: 'No subscription maze', trade_pilot_text: 'The intended Profito model is simple: local jobs that match your trade and area, with no monthly subscription. A fee would apply only when an agreed job is actually won.',
+        trade_list_1: 'No monthly membership planned', trade_list_2: 'Choose relevant local work', trade_list_3: 'Clear job details before committing', trade_list_4: 'Pay-for-success model still to be tested before launch', trade_brief: 'See the project brief format',
+        gallery_1_alt: 'Interior finishing detail', gallery_2_alt: 'Completed interior', gallery_3_alt: 'Installation materials', gallery_4_alt: 'Completed kitchen space', gallery_5_alt: 'Construction work detail', gallery_6_alt: 'Renovation tools and materials', gallery_7_alt: 'Materials prepared for installation', gallery_8_alt: 'Completed project detail',
+        planner_estimate_project: '{tier} tile project · {area} m²', planner_waste_suffix: ' incl. 10% allowance', planner_tiles: 'Tiles', planner_fixing: 'Adhesive & grout guide', planner_about: 'about {amount}', planner_labour: 'Labour guide', planner_total: 'Indicative total',
+        planner_brief_text: 'Tiling project, approx. {area} m², {tier} material level. Indicative materials and labour range: {range}. Final quote depends on preparation, removal, substrate condition, waterproofing, pattern, access and waste disposal.', planner_priority_text: 'Indicative range {range}'
+      },
+      pl: {
+        meta_title: 'Profito.system | Remonty, pomiary i wyceny', meta_description: 'Profito.system: praktyczne remonty, pomiary, wyceny i wyszukiwanie lokalnych dostawców materiałów w zachodnim Londynie.',
+        language_selector: 'Wybór języka', nav_label: 'Główna nawigacja', nav_planner: 'Zaplanuj projekt', nav_trade: 'Znajdź fachowca', hero_plan: 'Zaplanuj projekt', hero_work: 'Zobacz realizacje',
+        planner_eyebrow: 'Planer projektu · wersja robocza', planner_title: 'Poznaj zakres prac, zanim poprosisz o wycenę', planner_text: 'Zacznij od powierzchni, wybierz poziom materiałów i zobacz orientacyjny podział kosztów płytek, materiałów montażowych oraz robocizny. Następnie porównaj pobliskich dostawców albo przygotuj opis projektu.',
+        planner_step_job_title: 'Wybierz rodzaj pracy', planner_step_job_text: 'Układanie płytek działa już w tej wersji. Malowanie, podłogi i naprawy mogą działać według tego samego schematu.', planner_project_type: 'Rodzaj projektu',
+        planner_job_tiling: 'Wymiana lub montaż płytek', planner_job_painting: 'Malowanie · następne', planner_job_flooring: 'Podłogi · następne', planner_job_repairs: 'Naprawy · następne', planner_area: 'Powierzchnia w m²',
+        planner_step_material_title: 'Wybierz poziom materiałów', planner_step_material_text: 'Podane zakresy są orientacyjnymi przykładami, a nie aktualną ofertą dostawcy.', planner_tier_aria: 'Poziom cen płytek',
+        tier_economy: 'Ekonomiczny', tier_standard: 'Standardowy', tier_premium: 'Premium', tier_economy_price: 'około £12–£25 za m²', tier_standard_price: 'około £25–£50 za m²', tier_premium_price: 'około £50–£100 za m²',
+        planner_postcode: 'Kod pocztowy lub okolica', planner_need_area: 'Potrzebujesz powierzchni?', planner_measure_photo: 'Zmierz ze zdjęcia', planner_waste: 'Uwzględnij 10% zapasu płytek na docinki i odpady', planner_estimate_button: 'Oszacuj budżet płytek',
+        estimate_eyebrow: 'Orientacyjny budżet', estimate_title: 'Wprowadź dane projektu', estimate_empty: 'Użyj planera, aby zobaczyć prosty zakres kosztów materiałów i robocizny.', estimate_note: 'Przygotowanie, usunięcie starych wykończeń, poziomowanie, hydroizolacja, parking, wywóz odpadów, nietypowe wzory i ukryte usterki mogą zmienić końcową wycenę.', estimate_suppliers: 'Porównaj pobliskich dostawców', estimate_brief: 'Przygotuj opis projektu',
+        source_note: 'Kontekst cenowy: aktualne przykłady z rynku UK z', source_and: 'oraz',
+        trade_eyebrow: 'Lokalni fachowcy · prosto na początek', trade_title: 'Znajdź pomoc w pobliżu lub poznaj przyszły pilotaż lokalnych zleceń', trade_text: 'Dla właściciela nieruchomości działa już lokalne wyszukiwanie. Model dla fachowców poniżej jest przejrzystą koncepcją pilotażową, a nie uruchomionym płatnym marketplace.',
+        trade_find_title: 'Znajdź lokalnego fachowca', trade_find_text: 'Wybierz branżę i okolicę. Profito otworzy lokalne wyszukiwanie na mapie, aby można było porównać pobliskie opcje.', trade_type: 'Branża', trade_tiler: 'Glazurnik', trade_painter: 'Malarz i dekorator', trade_flooring: 'Montażysta podłóg', trade_repairs: 'Naprawy nieruchomości', trade_postcode: 'Kod pocztowy lub okolica', trade_search: 'Szukaj fachowców w pobliżu',
+        trade_for: 'Dla lokalnych fachowców', trade_no_subscription: 'Bez labiryntu abonamentów', trade_pilot_text: 'Założenie Profito jest proste: lokalne zlecenia dopasowane do branży i okolicy, bez miesięcznego abonamentu. Opłata miałaby być naliczana dopiero wtedy, gdy uzgodnione zlecenie zostanie faktycznie zdobyte.',
+        trade_list_1: 'Bez planowanego miesięcznego abonamentu', trade_list_2: 'Wybierasz pasujące lokalne zlecenia', trade_list_3: 'Jasne informacje o pracy przed decyzją', trade_list_4: 'Model opłaty za sukces zostanie sprawdzony przed uruchomieniem', trade_brief: 'Zobacz format opisu projektu',
+        gallery_1_alt: 'Detal wykończenia wnętrza', gallery_2_alt: 'Ukończone wnętrze', gallery_3_alt: 'Materiały montażowe', gallery_4_alt: 'Ukończona przestrzeń kuchenna', gallery_5_alt: 'Detal prac budowlanych', gallery_6_alt: 'Narzędzia i materiały remontowe', gallery_7_alt: 'Materiały przygotowane do montażu', gallery_8_alt: 'Detal ukończonej realizacji',
+        planner_estimate_project: '{tier} · projekt płytek · {area} m²', planner_waste_suffix: ' z 10% zapasu', planner_tiles: 'Płytki', planner_fixing: 'Klej i fuga', planner_about: 'około {amount}', planner_labour: 'Robocizna', planner_total: 'Orientacyjna suma',
+        planner_brief_text: 'Projekt płytek, około {area} m², poziom materiałów: {tier}. Orientacyjny zakres materiałów i robocizny: {range}. Końcowa wycena zależy od przygotowania, demontażu, stanu podłoża, hydroizolacji, wzoru, dostępu i wywozu odpadów.', planner_priority_text: 'Orientacyjny zakres {range}'
+      },
+      de: {
+        meta_title: 'Profito.system | Renovierung, Messung & Kalkulation', meta_description: 'Profito.system: praktische Renovierung, Messung, Kalkulation und lokale Materialsuche in West London.',
+        language_selector: 'Sprachauswahl', nav_label: 'Hauptnavigation', nav_planner: 'Projekt planen', nav_trade: 'Handwerker finden', hero_plan: 'Projekt planen', hero_work: 'Echte Arbeiten ansehen',
+        planner_eyebrow: 'Projektplaner · Arbeitsversion', planner_title: 'Den Auftrag verstehen, bevor du ein Angebot anfragst', planner_text: 'Beginne mit der Fläche, wähle ein Materialniveau und sieh eine ungefähre Aufteilung zwischen Fliesen, Verlegematerial und Arbeitskosten. Danach kannst du Händler in der Nähe vergleichen oder eine Projektbeschreibung vorbereiten.',
+        planner_step_job_title: 'Auftrag auswählen', planner_step_job_text: 'Fliesenarbeiten sind in dieser Vorschau bereits aktiv. Malerarbeiten, Bodenbeläge und Reparaturen können demselben Muster folgen.', planner_project_type: 'Projektart',
+        planner_job_tiling: 'Fliesen ersetzen oder verlegen', planner_job_painting: 'Malerarbeiten · als Nächstes', planner_job_flooring: 'Bodenbeläge · als Nächstes', planner_job_repairs: 'Reparaturen · als Nächstes', planner_area: 'Fläche in m²',
+        planner_step_material_title: 'Materialniveau auswählen', planner_step_material_text: 'Die Bereiche sind Richtwerte und kein aktuelles Händlerangebot.', planner_tier_aria: 'Fliesenpreisniveau',
+        tier_economy: 'Preiswert', tier_standard: 'Standard', tier_premium: 'Premium', tier_economy_price: 'ca. £12–£25 pro m²', tier_standard_price: 'ca. £25–£50 pro m²', tier_premium_price: 'ca. £50–£100 pro m²',
+        planner_postcode: 'Postleitzahl oder Ort', planner_need_area: 'Fläche noch unbekannt?', planner_measure_photo: 'Vom Foto messen', planner_waste: '10% Fliesenreserve für Zuschnitt und Verschnitt einrechnen', planner_estimate_button: 'Fliesenbudget schätzen',
+        estimate_eyebrow: 'Richtbudget', estimate_title: 'Projektdaten eingeben', estimate_empty: 'Nutze den Planer für einen einfachen Material- und Arbeitskostenbereich.', estimate_note: 'Vorbereitung, Entfernung alter Beläge, Ausgleich, Abdichtung, Parken, Entsorgung, ungewöhnliche Muster und verdeckte Mängel können das endgültige Angebot verändern.', estimate_suppliers: 'Händler in der Nähe vergleichen', estimate_brief: 'Projektbeschreibung vorbereiten',
+        source_note: 'Preiskontext: aktuelle Beispiele aus dem britischen Markt von', source_and: 'und',
+        trade_eyebrow: 'Lokale Handwerker · zuerst einfach', trade_title: 'Hilfe in der Nähe finden oder das künftige lokale Job-Pilotprojekt kennenlernen', trade_text: 'Für Eigentümer funktioniert bereits die lokale Suche. Das Handwerkermodell darunter ist ein transparentes Pilotkonzept und noch kein aktiver kostenpflichtiger Marktplatz.',
+        trade_find_title: 'Lokalen Handwerker finden', trade_find_text: 'Wähle das Gewerk und deine Gegend. Profito öffnet eine lokale Kartensuche zum Vergleichen naher Anbieter.', trade_type: 'Gewerk', trade_tiler: 'Fliesenleger', trade_painter: 'Maler & Lackierer', trade_flooring: 'Bodenleger', trade_repairs: 'Immobilienreparaturen', trade_postcode: 'Postleitzahl oder Ort', trade_search: 'Handwerker in der Nähe suchen',
+        trade_for: 'Für lokale Handwerker', trade_no_subscription: 'Kein Abo-Labyrinth', trade_pilot_text: 'Das geplante Profito-Modell ist einfach: lokale Aufträge passend zu Gewerk und Gebiet, ohne monatliches Abo. Eine Gebühr würde erst anfallen, wenn ein vereinbarter Auftrag tatsächlich gewonnen wurde.',
+        trade_list_1: 'Kein monatlicher Mitgliedsbeitrag geplant', trade_list_2: 'Passende lokale Aufträge auswählen', trade_list_3: 'Klare Auftragsdetails vor der Entscheidung', trade_list_4: 'Das Erfolgsgebührenmodell wird vor dem Start getestet', trade_brief: 'Format der Projektbeschreibung ansehen',
+        gallery_1_alt: 'Detail einer Innenraumoberfläche', gallery_2_alt: 'Fertiggestellter Innenraum', gallery_3_alt: 'Installationsmaterialien', gallery_4_alt: 'Fertiggestellter Küchenbereich', gallery_5_alt: 'Detail von Bauarbeiten', gallery_6_alt: 'Renovierungswerkzeuge und Materialien', gallery_7_alt: 'Für die Montage vorbereitete Materialien', gallery_8_alt: 'Detail eines fertiggestellten Projekts',
+        planner_estimate_project: '{tier} Fliesenprojekt · {area} m²', planner_waste_suffix: ' inkl. 10% Reserve', planner_tiles: 'Fliesen', planner_fixing: 'Kleber & Fugenmasse', planner_about: 'ca. {amount}', planner_labour: 'Arbeitskosten', planner_total: 'Richtwert gesamt',
+        planner_brief_text: 'Fliesenprojekt, ca. {area} m², Materialniveau {tier}. Richtwert für Material und Arbeit: {range}. Das endgültige Angebot hängt von Vorbereitung, Rückbau, Untergrund, Abdichtung, Muster, Zugang und Entsorgung ab.', planner_priority_text: 'Richtwert {range}'
+      },
+      es: {
+        meta_title: 'Profito.system | Reformas, medición y presupuestos', meta_description: 'Profito.system: reformas prácticas, medición, presupuestos y búsqueda de materiales locales en el oeste de Londres.',
+        language_selector: 'Selector de idioma', nav_label: 'Navegación principal', nav_planner: 'Planificar proyecto', nav_trade: 'Buscar profesional', hero_plan: 'Planificar un proyecto', hero_work: 'Ver trabajos reales',
+        planner_eyebrow: 'Planificador de proyecto · vista previa', planner_title: 'Entiende el trabajo antes de pedir presupuesto', planner_text: 'Empieza con la superficie, elige un nivel de material y consulta una distribución orientativa entre azulejos, materiales de colocación y mano de obra. Después compara proveedores cercanos o prepara un resumen del proyecto.',
+        planner_step_job_title: 'Elige el trabajo', planner_step_job_text: 'El alicatado ya funciona en esta vista previa. Pintura, suelos y reparaciones pueden seguir el mismo modelo.', planner_project_type: 'Tipo de proyecto',
+        planner_job_tiling: 'Sustituir o instalar azulejos', planner_job_painting: 'Pintura · siguiente', planner_job_flooring: 'Suelos · siguiente', planner_job_repairs: 'Reparaciones · siguiente', planner_area: 'Superficie en m²',
+        planner_step_material_title: 'Elige el nivel de material', planner_step_material_text: 'Los rangos son ejemplos orientativos, no un presupuesto actual de un proveedor.', planner_tier_aria: 'Nivel de precio de azulejos',
+        tier_economy: 'Económico', tier_standard: 'Estándar', tier_premium: 'Premium', tier_economy_price: 'aprox. £12–£25 por m²', tier_standard_price: 'aprox. £25–£50 por m²', tier_premium_price: 'aprox. £50–£100 por m²',
+        planner_postcode: 'Código postal o zona', planner_need_area: '¿Necesitas la superficie?', planner_measure_photo: 'Medir desde una foto', planner_waste: 'Incluir un 10% extra de azulejos para cortes y desperdicio', planner_estimate_button: 'Estimar presupuesto de alicatado',
+        estimate_eyebrow: 'Presupuesto orientativo', estimate_title: 'Introduce los datos del proyecto', estimate_empty: 'Usa el planificador para ver un rango sencillo de materiales y mano de obra.', estimate_note: 'La preparación, retirada de acabados antiguos, nivelación, impermeabilización, aparcamiento, residuos, patrones especiales y defectos ocultos pueden cambiar el presupuesto final.', estimate_suppliers: 'Comparar proveedores cercanos', estimate_brief: 'Preparar resumen del proyecto',
+        source_note: 'Contexto de precios: ejemplos actuales del mercado británico de', source_and: 'y',
+        trade_eyebrow: 'Profesionales locales · sencillo primero', trade_title: 'Encuentra ayuda cerca o conoce el futuro piloto de trabajos locales', trade_text: 'La parte para propietarios ya funciona como búsqueda local. El modelo para profesionales que aparece abajo es un concepto piloto transparente, todavía no un marketplace de pago activo.',
+        trade_find_title: 'Buscar un profesional local', trade_find_text: 'Elige el oficio y tu zona. Profito abre una búsqueda local en el mapa para comparar opciones cercanas.', trade_type: 'Oficio', trade_tiler: 'Alicatador', trade_painter: 'Pintor y decorador', trade_flooring: 'Instalador de suelos', trade_repairs: 'Reparaciones de propiedad', trade_postcode: 'Código postal o zona', trade_search: 'Buscar profesionales cercanos',
+        trade_for: 'Para profesionales locales', trade_no_subscription: 'Sin laberinto de suscripciones', trade_pilot_text: 'El modelo previsto de Profito es sencillo: trabajos locales que encajan con tu oficio y zona, sin suscripción mensual. Solo se aplicaría una tarifa cuando se consiga realmente un trabajo acordado.',
+        trade_list_1: 'Sin cuota mensual prevista', trade_list_2: 'Elige trabajos locales relevantes', trade_list_3: 'Detalles claros antes de comprometerte', trade_list_4: 'El modelo de pago por éxito se probará antes del lanzamiento', trade_brief: 'Ver el formato del resumen del proyecto',
+        gallery_1_alt: 'Detalle de acabado interior', gallery_2_alt: 'Interior terminado', gallery_3_alt: 'Materiales de instalación', gallery_4_alt: 'Espacio de cocina terminado', gallery_5_alt: 'Detalle de obra', gallery_6_alt: 'Herramientas y materiales de reforma', gallery_7_alt: 'Materiales preparados para instalación', gallery_8_alt: 'Detalle de proyecto terminado',
+        planner_estimate_project: 'Proyecto de azulejos {tier} · {area} m²', planner_waste_suffix: ' con 10% extra', planner_tiles: 'Azulejos', planner_fixing: 'Adhesivo y lechada', planner_about: 'aprox. {amount}', planner_labour: 'Mano de obra', planner_total: 'Total orientativo',
+        planner_brief_text: 'Proyecto de alicatado de aprox. {area} m², nivel de material {tier}. Rango orientativo de materiales y mano de obra: {range}. El presupuesto final depende de la preparación, retirada, estado de la base, impermeabilización, patrón, acceso y residuos.', planner_priority_text: 'Rango orientativo {range}'
+      }
+    };
+
+    for (const lang of Object.keys(translationAdditions)) {
+      Object.assign(translations[lang], translationAdditions[lang]);
+    }
+
+    translations.fr = {
+      nav_services: 'Services', nav_calculator: 'Calculateur', nav_miarka: 'Mesure photo', nav_suppliers: 'Fournisseurs locaux', nav_portfolio: 'Réalisations', nav_quote: 'Devis',
+      hero_eyebrow: 'Rénovation · Mesure · Estimation', hero_title: 'D’une mesure réelle à un plan clair', hero_text: 'Profito.system associe des travaux pratiques sur les biens immobiliers à des outils simples dans le navigateur pour mesurer, estimer et trouver des fournisseurs de matériaux à proximité dans l’ouest de Londres.', hero_miarka: 'Ouvrir la mesure photo', hero_quote: 'Préparer une demande',
+      services_eyebrow: 'Travail pratique', services_title: 'Services principaux', services_text: 'Un portfolio pratique dans l’ouest de Londres, axé sur la préparation, les finitions, les réparations et une planification claire.', service_1_title: 'Peinture & finitions', service_1_text: 'Préparation des surfaces, décoration, reprises et corrections de finition.', service_2_title: 'Réparations immobilières', service_2_text: 'Réparations pratiques, améliorations et entretien général du bien.', service_3_title: 'Mesure & périmètre', service_3_text: 'Calculs simples de surface, mesure sur photo avec une référence de taille connue et définition structurée des travaux.',
+      calc_eyebrow: 'Mesure rapide', calc_title: 'Calculateur de surface', calc_length: 'Longueur en mètres', calc_width: 'Largeur en mètres', calc_button: 'Calculer la surface', calc_result: 'Résultat',
+      miarka_eyebrow: 'Outil dans le navigateur', miarka_title: 'Mesure sur photo', miarka_text: 'Utilisez une feuille A4, une carte standard ID-1 ou votre propre rectangle de dimensions connues. Miarka corrige localement la perspective et peut transmettre directement la surface au planificateur de projet.', miarka_button: 'Ouvrir la mesure photo',
+      suppliers_eyebrow: 'Approvisionnement local', suppliers_title: 'Trouver des fournisseurs de matériaux à proximité', suppliers_text: 'Saisissez un code postal ou une zone au Royaume-Uni. Profito.system crée des liens de recherche vers les négoces de matériaux et magasins de bricolage proches.', suppliers_label: 'Code postal ou zone', suppliers_button: 'Trouver des fournisseurs locaux', suppliers_privacy: 'Le code postal est utilisé uniquement dans votre navigateur pour créer des liens de recherche. Profito.system ne le stocke pas.', suppliers_open: 'Rechercher à proximité',
+      portfolio_eyebrow: 'Travaux sélectionnés', portfolio_title: 'Projets réels', portfolio_text: 'De vraies photos issues des archives de projets Profito, montrant des travaux terminés et en cours.', gallery_1: 'Finition intérieure', gallery_2: 'Projet intérieur', gallery_3: 'Installation', gallery_4: 'Espace terminé', gallery_5: 'Travaux de construction', gallery_6: 'Préparation du projet', gallery_7: 'Travaux d’installation', gallery_8: 'Résultat final',
+      quote_eyebrow: 'Étape suivante', quote_title: 'Préparer une demande de devis', quote_text: 'Le formulaire crée un résumé uniquement sur cet appareil. Il n’envoie et n’enregistre rien automatiquement.', quote_name: 'Nom', quote_phone: 'Téléphone', quote_area: 'Code postal ou zone', quote_timing: 'Délai', quote_flexible: 'Flexible', quote_soon: 'Bientôt', quote_urgent: 'Urgent', quote_work: 'Quels travaux faut-il réaliser ?', quote_media: 'Lien vers des photos ou une courte vidéo', quote_budget: 'Budget ou priorité', quote_access: 'Stationnement et accès', quote_button: 'Préparer le résumé', quote_copy: 'Copier le résumé', quote_ready: 'Le résumé est prêt. Vérifiez-le avant de le copier.', quote_copied: 'Résumé copié.', quote_copy_fail: 'La copie automatique a échoué. Sélectionnez le texte manuellement ci-dessous.', quote_summary_title: 'Demande Profito.system', quote_none: '-', footer: 'Profito.system · mesure pratique, périmètre clair, résultats utiles',
+      meta_title: 'Profito.system | Rénovation, mesure & estimation', meta_description: 'Profito.system : rénovation pratique, mesure, estimation et recherche locale de matériaux dans l’ouest de Londres.',
+      language_selector: 'Sélecteur de langue', nav_label: 'Navigation principale', nav_planner: 'Planifier le projet', nav_trade: 'Trouver un artisan', hero_plan: 'Planifier un projet', hero_work: 'Voir des réalisations réelles',
+      planner_eyebrow: 'Planificateur de projet · aperçu', planner_title: 'Comprendre le chantier avant de demander un devis', planner_text: 'Commencez par la surface, choisissez un niveau de matériaux et consultez une répartition indicative entre carrelage, produits de pose et main-d’œuvre. Comparez ensuite les fournisseurs proches ou préparez un descriptif du projet.',
+      planner_step_job_title: 'Choisir le travail', planner_step_job_text: 'Le carrelage fonctionne déjà dans cet aperçu. La peinture, les sols et les réparations pourront suivre le même modèle.', planner_project_type: 'Type de projet',
+      planner_job_tiling: 'Remplacer ou poser du carrelage', planner_job_painting: 'Peinture · prochainement', planner_job_flooring: 'Revêtement de sol · prochainement', planner_job_repairs: 'Réparations · prochainement', planner_area: 'Surface en m²',
+      planner_step_material_title: 'Choisir le niveau de matériaux', planner_step_material_text: 'Ces fourchettes sont des exemples indicatifs et non un devis fournisseur en temps réel.', planner_tier_aria: 'Niveau de prix du carrelage',
+      tier_economy: 'Économique', tier_standard: 'Standard', tier_premium: 'Premium', tier_economy_price: 'env. £12–£25 par m²', tier_standard_price: 'env. £25–£50 par m²', tier_premium_price: 'env. £50–£100 par m²',
+      planner_postcode: 'Code postal ou zone', planner_need_area: 'Besoin de la surface ?', planner_measure_photo: 'Mesurer depuis une photo', planner_waste: 'Inclure 10% de carrelage en plus pour les découpes et pertes', planner_estimate_button: 'Estimer le budget carrelage',
+      estimate_eyebrow: 'Budget indicatif', estimate_title: 'Saisissez les détails du projet', estimate_empty: 'Utilisez le planificateur pour obtenir une fourchette simple de matériaux et de main-d’œuvre.', estimate_note: 'La préparation, la dépose des anciens revêtements, le ragréage, l’étanchéité, le stationnement, l’évacuation des déchets, les motifs particuliers et les défauts cachés peuvent modifier le devis final.', estimate_suppliers: 'Comparer les fournisseurs proches', estimate_brief: 'Préparer un descriptif du projet',
+      source_note: 'Contexte des prix : exemples actuels du marché britannique provenant de', source_and: 'et',
+      trade_eyebrow: 'Artisans locaux · commencer simplement', trade_title: 'Trouver de l’aide à proximité ou découvrir le futur pilote d’emplois locaux', trade_text: 'Le côté propriétaire fonctionne déjà comme une recherche locale. Le modèle pour artisans ci-dessous est un concept pilote transparent, pas encore une marketplace payante active.',
+      trade_find_title: 'Trouver un artisan local', trade_find_text: 'Choisissez le métier et votre zone. Profito ouvre une recherche locale sur la carte afin de comparer les options proches.', trade_type: 'Métier', trade_tiler: 'Carreleur', trade_painter: 'Peintre décorateur', trade_flooring: 'Poseur de sols', trade_repairs: 'Réparations immobilières', trade_postcode: 'Code postal ou zone', trade_search: 'Rechercher des artisans à proximité',
+      trade_for: 'Pour les artisans locaux', trade_no_subscription: 'Pas de labyrinthe d’abonnements', trade_pilot_text: 'Le modèle Profito envisagé est simple : des chantiers locaux correspondant à votre métier et votre zone, sans abonnement mensuel. Des frais ne s’appliqueraient que lorsqu’un chantier convenu est réellement remporté.',
+      trade_list_1: 'Aucun abonnement mensuel prévu', trade_list_2: 'Choisissez des chantiers locaux pertinents', trade_list_3: 'Des détails clairs avant de vous engager', trade_list_4: 'Le modèle de paiement au succès sera testé avant le lancement', trade_brief: 'Voir le format du descriptif de projet',
+      gallery_1_alt: 'Détail de finition intérieure', gallery_2_alt: 'Intérieur terminé', gallery_3_alt: 'Matériaux d’installation', gallery_4_alt: 'Espace cuisine terminé', gallery_5_alt: 'Détail de travaux de construction', gallery_6_alt: 'Outils et matériaux de rénovation', gallery_7_alt: 'Matériaux préparés pour l’installation', gallery_8_alt: 'Détail d’un projet terminé',
+      planner_estimate_project: 'Projet carrelage {tier} · {area} m²', planner_waste_suffix: ' avec 10% de marge', planner_tiles: 'Carrelage', planner_fixing: 'Colle & joint', planner_about: 'env. {amount}', planner_labour: 'Main-d’œuvre', planner_total: 'Total indicatif',
+      planner_brief_text: 'Projet de carrelage d’environ {area} m², niveau de matériaux {tier}. Fourchette indicative matériaux et main-d’œuvre : {range}. Le devis final dépend de la préparation, de la dépose, de l’état du support, de l’étanchéité, du motif, de l’accès et de l’évacuation des déchets.', planner_priority_text: 'Fourchette indicative {range}'
+    };
+
     let currentLang = 'en';
 
     function t(key) {
@@ -385,6 +498,18 @@
         const key = element.dataset.i18n;
         if (translations[currentLang][key]) element.textContent = translations[currentLang][key];
       });
+      document.querySelectorAll('[data-i18n-aria]').forEach((element) => {
+        const value = translations[currentLang][element.dataset.i18nAria];
+        if (value) element.setAttribute('aria-label', value);
+      });
+      document.querySelectorAll('[data-i18n-alt]').forEach((element) => {
+        const value = translations[currentLang][element.dataset.i18nAlt];
+        if (value) element.setAttribute('alt', value);
+      });
+      document.querySelectorAll('[data-i18n-content]').forEach((element) => {
+        const value = translations[currentLang][element.dataset.i18nContent];
+        if (value) element.setAttribute('content', value);
+      });
       document.querySelectorAll('.lang-btn').forEach((button) => {
         const active = button.dataset.lang === currentLang;
         button.classList.toggle('active', active);
@@ -398,6 +523,12 @@
         }
       }
       buildSupplierLinks();
+      if (typeof window.refreshLocalizedPlanner === 'function') window.refreshLocalizedPlanner();
+      const output = document.getElementById('quoteOutput');
+      if (output && !output.hidden) {
+        output.textContent = quoteSummary(document.getElementById('quoteForm'));
+        document.getElementById('quoteStatus').textContent = t('quote_ready');
+      }
     }
 
     document.querySelectorAll('.lang-btn').forEach((button) => {
