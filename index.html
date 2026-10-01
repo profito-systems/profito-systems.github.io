@@ -554,6 +554,87 @@
       return 'en';
     }
 
+    const countryStorageKey = 'profitoCountry';
+    const countryData = {
+      GB: { searchName: 'United Kingdom', defaultArea: 'TW8', timeZones: Array.of('Europe/London') },
+      PL: { searchName: 'Poland', defaultArea: '00-001', timeZones: Array.of('Europe/Warsaw') },
+      DE: { searchName: 'Germany', defaultArea: '10115', timeZones: Array.of('Europe/Berlin', 'Europe/Busingen') },
+      FR: { searchName: 'France', defaultArea: '75001', timeZones: Array.of('Europe/Paris') },
+      ES: { searchName: 'Spain', defaultArea: '28001', timeZones: Array.of('Europe/Madrid', 'Atlantic/Canary') }
+    };
+    let currentCountry = 'GB';
+
+    function supportedCountry(code) {
+      const normalized = String(code || '').toUpperCase();
+      return countryData[normalized] ? normalized : null;
+    }
+
+    function localeCountry(tag) {
+      const parts = String(tag || '').replace('_', '-').split('-');
+      for (const part of parts.slice(1)) {
+        const code = supportedCountry(part);
+        if (code) return code;
+      }
+      return null;
+    }
+
+    function detectPreferredCountry() {
+      try {
+        const saved = supportedCountry(localStorage.getItem(countryStorageKey));
+        if (saved) return saved;
+      } catch (error) {
+        // Storage may be unavailable. Browser hints remain a safe fallback.
+      }
+
+      try {
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        for (const entry of Object.entries(countryData)) {
+          if (entry[1].timeZones.includes(timeZone)) return entry[0];
+        }
+      } catch (error) {
+        // Ignore unavailable or unusual timezone implementations.
+      }
+
+      const browserLanguages = Array.isArray(navigator.languages) && navigator.languages.length
+        ? navigator.languages
+        : Array.of(navigator.language);
+      for (const tag of browserLanguages) {
+        const detected = localeCountry(tag);
+        if (detected) return detected;
+      }
+
+      return 'GB';
+    }
+
+    function syncCountryAreaDefaults(previousCountry, nextCountry) {
+      const previousDefault = countryData[previousCountry]?.defaultArea;
+      const nextDefault = countryData[nextCountry].defaultArea;
+      for (const id of Array.of('supplierArea', 'tradePostcode', 'plannerPostcode')) {
+        const input = document.getElementById(id);
+        if (!input) continue;
+        const value = input.value.trim();
+        if (!value || value === previousDefault) input.value = nextDefault;
+      }
+    }
+
+    function setCountry(code, persist = false) {
+      const nextCountry = supportedCountry(code) || 'GB';
+      const previousCountry = currentCountry;
+      currentCountry = nextCountry;
+      document.querySelectorAll('.country-select').forEach((select) => {
+        select.value = currentCountry;
+      });
+      if (previousCountry !== currentCountry) syncCountryAreaDefaults(previousCountry, currentCountry);
+      if (persist) {
+        try {
+          localStorage.setItem(countryStorageKey, currentCountry);
+        } catch (error) {
+          // Local search still works when storage is blocked.
+        }
+      }
+      buildSupplierLinks();
+    }
+
     function setLanguage(lang, persist = false) {
       currentLang = supportedLanguage(lang) || 'en';
       document.documentElement.lang = currentLang;
@@ -609,27 +690,40 @@
       document.getElementById('areaResult').textContent = `${(length * width).toFixed(2)} m²`;
     });
 
-    const suppliers = ['Topps Tiles', 'Tile Giant', 'Wickes', 'B&Q', 'Screwfix', 'Toolstation', 'Travis Perkins', 'Jewson', 'Selco Builders Warehouse'];
+    const supplierCategories = Array.of(
+      { key: 'supplier_category_materials', query: 'building materials supplier' },
+      { key: 'supplier_category_tiles', query: 'tile shop' },
+      { key: 'supplier_category_diy', query: 'DIY home improvement store' },
+      { key: 'supplier_category_paint', query: 'paint decorating shop' },
+      { key: 'supplier_category_plumbing', query: 'plumbing supplies' },
+      { key: 'supplier_category_tools', query: 'tool shop' }
+    );
 
     function buildSupplierLinks() {
-      const area = document.getElementById('supplierArea').value.trim() || 'TW8';
+      const country = countryData[currentCountry];
+      const areaInput = document.getElementById('supplierArea');
+      const area = areaInput.value.trim() || country.defaultArea;
       const container = document.getElementById('supplierLinks');
       container.replaceChildren();
-      suppliers.forEach((supplier) => {
+      supplierCategories.forEach((category) => {
         const link = document.createElement('a');
-        const query = `${supplier} building materials near ${area} UK`;
-        link.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+        const query = category.query + ' near ' + area + ', ' + country.searchName;
+        link.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         link.className = 'supplier-link';
         const name = document.createElement('strong');
-        name.textContent = supplier;
+        name.textContent = t(category.key);
         const action = document.createElement('span');
         action.textContent = t('suppliers_open');
         link.append(name, action);
         container.appendChild(link);
       });
     }
+
+    document.querySelectorAll('.country-select').forEach((select) => {
+      select.addEventListener('change', () => setCountry(select.value, true));
+    });
 
     document.getElementById('buildSupplierLinks').addEventListener('click', buildSupplierLinks);
     document.getElementById('supplierArea').addEventListener('keydown', (event) => {
@@ -674,6 +768,7 @@
       }
     });
 
+    setCountry(detectPreferredCountry());
     setLanguage(detectPreferredLanguage());
   </script>
 
