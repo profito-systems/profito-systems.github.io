@@ -112,6 +112,7 @@
             <a class="btn-primary" href="#quote" data-i18n="estimate_brief">Prepare a project brief</a>
           </div>
           <p class="source-note"><span data-i18n="source_note">Price context: current UK examples from</span> <a href="https://www.checkatrade.com/blog/cost-guides/tiling-cost/" target="_blank" rel="noopener noreferrer">Checkatrade</a>, <a href="https://www.wickes.co.uk/Products/Tiles/All-Tiles/c/1070003" target="_blank" rel="noopener noreferrer">Wickes</a> <span data-i18n="source_and">and</span> <a href="https://www.toppstiles.co.uk/wall-tiles" target="_blank" rel="noopener noreferrer">Topps Tiles</a>.</p>
+          <p class="source-note" data-i18n="pricing_scope">Budget figures are currently a UK benchmark in GBP. The country setting changes local searches, not the pricing model.</p>
         </aside>
       </div>
     </section>
@@ -168,6 +169,16 @@
         <h2 data-i18n="suppliers_title">Find nearby material suppliers</h2>
         <p data-i18n="suppliers_text">Enter a UK postcode or area. Profito.system creates map-search links for common builders' merchants and DIY suppliers nearby.</p>
         <div class="supplier-controls">
+          <div class="input-group">
+            <label for="supplierCountry" data-i18n="country_label">Country</label>
+            <select id="supplierCountry" class="country-select" aria-describedby="supplierPrivacy">
+              <option value="GB">United Kingdom</option>
+              <option value="PL">Poland</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="ES">Spain</option>
+            </select>
+          </div>
           <div class="input-group supplier-input">
             <label for="supplierArea" data-i18n="suppliers_label">Postcode or area</label>
             <input id="supplierArea" value="TW8" autocomplete="postal-code" aria-describedby="supplierPrivacy">
@@ -213,9 +224,19 @@
               <label for="tradeType" data-i18n="trade_type">Trade</label>
               <select id="tradeType">
                 <option value="tiler" data-i18n="trade_tiler">Tiler</option>
-                <option value="painter decorator" data-i18n="trade_painter">Painter & decorator</option>
-                <option value="flooring installer" data-i18n="trade_flooring">Flooring installer</option>
-                <option value="handyman property repairs" data-i18n="trade_repairs">Property repairs</option>
+                <option value="painter" data-i18n="trade_painter">Painter & decorator</option>
+                <option value="flooring" data-i18n="trade_flooring">Flooring installer</option>
+                <option value="repairs" data-i18n="trade_repairs">Property repairs</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="tradeCountry" data-i18n="country_label">Country</label>
+              <select id="tradeCountry" class="country-select">
+                <option value="GB">United Kingdom</option>
+                <option value="PL">Poland</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="ES">Spain</option>
               </select>
             </div>
             <div class="input-group">
