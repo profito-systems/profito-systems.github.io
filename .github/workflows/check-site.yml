@@ -12,7 +12,7 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
 
     steps:
       - name: Fetch the tested commit
@@ -27,3 +27,11 @@ jobs:
 
       - name: Validate site, Miarka, and marketing recovery assets
         run: npm --prefix site run check
+      - name: Install pinned browser test tools
+        working-directory: site
+        run: |
+          npm install --no-save --package-lock=false --ignore-scripts playwright@1.62.1
+          npx --no-install playwright install --with-deps chromium
+      - name: Verify desktop and mobile measurement flows
+        working-directory: site
+        run: npm run test:browser

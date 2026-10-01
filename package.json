@@ -2,7 +2,8 @@
   "name": "profito-systems-site",
   "private": true,
   "scripts": {
-    "check": "node scripts/check-site.mjs && node scripts/generate-marketing-pack.mjs . --check",
-    "marketing:generate": "node scripts/generate-marketing-pack.mjs"
+    "check": "node scripts/check-site.mjs && node scripts/generate-marketing-pack.mjs . --check && node --test scripts/measurement.test.mjs",
+    "marketing:generate": "node scripts/generate-marketing-pack.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs"
   }
 }

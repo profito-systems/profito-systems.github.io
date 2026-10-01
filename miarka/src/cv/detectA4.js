@@ -129,12 +129,13 @@ function referenceOutputGeometry(corners, longSideMm, shortSideMm, pixelsPerMill
 }
 
 function orderCorners(points) {
-  const pts = points.map((point) => ({ x: point.x, y: point.y }));
-  pts.sort((a, b) => a.x + a.y - (b.x + b.y));
-  const tl = pts[0];
-  const br = pts[3];
-  const mid = [pts[1], pts[2]];
-  const tr = mid[0].x > mid[1].x ? mid[0] : mid[1];
-  const bl = mid[0].x > mid[1].x ? mid[1] : mid[0];
-  return [tl, tr, br, bl];
+  const center = points.reduce((acc, p) => ({ x: acc.x + p.x / points.length, y: acc.y + p.y / points.length }), { x: 0, y: 0 });
+  const pts = points.map((p) => ({ x: p.x, y: p.y }));
+  pts.sort((a, b) => Math.atan2(a.y - center.y, a.x - center.x) - Math.atan2(b.y - center.y, b.x - center.x));
+  let start = 0;
+  pts.forEach((p, index) => {
+    const first = pts.at(start);
+    if (p.x + p.y < first.x + first.y || (p.x + p.y === first.x + first.y && p.y < first.y)) start = index;
+  });
+  return pts.slice(start).concat(pts.slice(0, start));
 }
