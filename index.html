@@ -582,7 +582,7 @@
         `${t('quote_area')}: ${data.get('area')}`,
         `${t('quote_work')}: ${data.get('work')}`,
         `${t('quote_media')}: ${data.get('media') || t('quote_none')}`,
-        `${t('quote_timing')}: ${data.get('urgency')}`,
+        `${t('quote_timing')}: ${t('quote_' + String(data.get('urgency')).toLowerCase())}`,
         `${t('quote_budget')}: ${data.get('priority') || t('quote_none')}`,
         `${t('quote_access')}: ${data.get('access') || t('quote_none')}`
       ].join('\n');
@@ -612,26 +612,42 @@
 
   <script>
     const tileRanges = {
-      economy: { min: 12, max: 25, label: 'Economy' },
-      standard: { min: 25, max: 50, label: 'Standard' },
-      premium: { min: 50, max: 100, label: 'Premium' }
+      economy: { min: 12, max: 25, labelKey: 'tier_economy' },
+      standard: { min: 25, max: 50, labelKey: 'tier_standard' },
+      premium: { min: 50, max: 100, labelKey: 'tier_premium' }
     };
 
+    const localeByLanguage = {
+      en: 'en-GB',
+      pl: 'pl-PL',
+      de: 'de-DE',
+      fr: 'fr-FR',
+      es: 'es-ES'
+    };
+
+    function formatTranslation(key, values = {}) {
+      let text = t(key);
+      for (const entry of Object.entries(values)) {
+        text = text.replaceAll('{' + entry[0] + '}', String(entry[1]));
+      }
+      return text;
+    }
+
     const money = function (value) {
-      return new Intl.NumberFormat('en-GB', {
+      return new Intl.NumberFormat(localeByLanguage[currentLang] || 'en-GB', {
         style: 'currency',
         currency: 'GBP',
         maximumFractionDigits: 0
       }).format(value);
     };
 
-    document.getElementById('tilePlannerForm').addEventListener('submit', function (event) {
-      event.preventDefault();
+    function renderPlannerEstimate(updateQuote = true) {
       const area = Number(document.getElementById('plannerArea').value);
       if (!Number.isFinite(area) || area <= 0) return;
 
       const tierKey = document.querySelector('input[name="tileTier"]:checked').value;
       const tier = tileRanges[tierKey];
+      const tierLabel = t(tier.labelKey);
       const includeWaste = document.getElementById('plannerWaste').checked;
       const tileArea = area * (includeWaste ? 1.1 : 1);
 
@@ -642,16 +658,19 @@
       const labourMax = area * 60;
       const totalMin = tileMin + fixing + labourMin;
       const totalMax = tileMax + fixing + labourMax;
+      const range = money(totalMin) + '–' + money(totalMax);
 
       document.getElementById('plannerEstimateTitle').textContent =
-        tier.label + ' tile project · ' + area.toFixed(1) + ' m²';
+        formatTranslation('planner_estimate_project', { tier: tierLabel, area: area.toFixed(1) });
 
-      const wasteText = includeWaste ? ' incl. 10% allowance' : '';
+      const wasteText = includeWaste ? t('planner_waste_suffix') : '';
       document.getElementById('plannerEstimate').innerHTML =
-        '<div class="estimate-row"><span>Tiles' + wasteText + '</span><strong>' + money(tileMin) + '–' + money(tileMax) + '</strong></div>' +
-        '<div class="estimate-row"><span>Adhesive & grout guide</span><strong>about ' + money(fixing) + '</strong></div>' +
-        '<div class="estimate-row"><span>Labour guide</span><strong>' + money(labourMin) + '–' + money(labourMax) + '</strong></div>' +
-        '<div class="estimate-total"><span>Indicative total</span><strong>' + money(totalMin) + '–' + money(totalMax) + '</strong></div>';
+        '<div class="estimate-row"><span>' + t('planner_tiles') + wasteText + '</span><strong>' + money(tileMin) + '–' + money(tileMax) + '</strong></div>' +
+        '<div class="estimate-row"><span>' + t('planner_fixing') + '</span><strong>' + formatTranslation('planner_about', { amount: money(fixing) }) + '</strong></div>' +
+        '<div class="estimate-row"><span>' + t('planner_labour') + '</span><strong>' + money(labourMin) + '–' + money(labourMax) + '</strong></div>' +
+        '<div class="estimate-total"><span>' + t('planner_total') + '</span><strong>' + range + '</strong></div>';
+
+      if (!updateQuote) return;
 
       const postcode = document.getElementById('plannerPostcode').value.trim();
       if (postcode) {
@@ -660,10 +679,22 @@
         document.getElementById('quoteArea').value = postcode;
       }
 
-      const brief = 'Tiling project, approx. ' + area.toFixed(1) + ' m², ' + tier.label + ' material level. Indicative materials and labour range: ' + money(totalMin) + '–' + money(totalMax) + '. Final quote depends on preparation, removal, substrate condition, waterproofing, pattern, access and waste disposal.';
-      document.getElementById('quoteWork').value = brief;
-      document.getElementById('quotePriority').value = 'Indicative range ' + money(totalMin) + '–' + money(totalMax);
+      document.getElementById('quoteWork').value = formatTranslation('planner_brief_text', {
+        area: area.toFixed(1),
+        tier: tierLabel,
+        range
+      });
+      document.getElementById('quotePriority').value = formatTranslation('planner_priority_text', { range });
+    }
+
+    document.getElementById('tilePlannerForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      renderPlannerEstimate(true);
     });
+
+    window.refreshLocalizedPlanner = function () {
+      renderPlannerEstimate(false);
+    };
 
     document.getElementById('plannerSuppliers').addEventListener('click', function () {
       const postcode = document.getElementById('plannerPostcode').value.trim();
