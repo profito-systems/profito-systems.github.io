@@ -14,8 +14,12 @@ const server = http.createServer((request, response) => {
   const url = new URL(request.url, 'http://localhost');
   let requested = decodeURIComponent(url.pathname);
   if (requested === '/') requested = '/index.html';
-  const filename = !production && requested.startsWith('/src/')
-    ? path.join(root, requested) : path.join(siteRoot, requested);
+  const sitePrefix = '/__site/';
+  const filename = production && requested.startsWith(sitePrefix)
+    ? path.join(root, requested.slice(sitePrefix.length))
+    : !production && requested.startsWith('/src/')
+      ? path.join(root, requested)
+      : path.join(siteRoot, requested);
   if (!filename.startsWith(root + path.sep) || !fs.existsSync(filename) || fs.statSync(filename).isDirectory()) {
     response.writeHead(404); response.end(); return;
   }
@@ -32,6 +36,36 @@ const failures = Array.of();
 const assertLength = (text, expected) => assert.ok(Math.abs(Number.parseFloat(text) - expected) < 1, text + ' differs from ' + expected + 'mm by more than touch-coordinate tolerance');
 
 try {
+  if (production) {
+    const polishPage = await browser.newPage({ locale: 'pl-PL', viewport: { width: 390, height: 844 } });
+    polishPage.on('pageerror', (error) => failures.push(error.message));
+    await polishPage.goto(origin + '/__site/index.html');
+    assert.equal(await polishPage.locator('html').getAttribute('lang'), 'pl');
+    assert.equal(await polishPage.locator('[data-i18n="nav_planner"]').textContent(), 'Zaplanuj projekt');
+    assert.equal(await polishPage.locator('[data-lang="pl"]').getAttribute('aria-pressed'), 'true');
+    assert.equal(await polishPage.locator('[data-lang="fr"]').count(), 1);
+
+    await polishPage.locator('[data-lang="de"]').click();
+    assert.equal(await polishPage.locator('html').getAttribute('lang'), 'de');
+    assert.equal(await polishPage.evaluate(() => localStorage.getItem('profitoLanguage')), 'de');
+    await polishPage.reload();
+    assert.equal(await polishPage.locator('html').getAttribute('lang'), 'de', 'manual language choice must survive reload');
+    await polishPage.close();
+
+    const frenchPage = await browser.newPage({ locale: 'fr-FR', viewport: { width: 390, height: 844 } });
+    frenchPage.on('pageerror', (error) => failures.push(error.message));
+    await frenchPage.goto(origin + '/__site/index.html');
+    assert.equal(await frenchPage.locator('html').getAttribute('lang'), 'fr');
+    assert.equal(await frenchPage.locator('[data-i18n="planner_title"]').textContent(), 'Comprendre le chantier avant de demander un devis');
+    await frenchPage.close();
+
+    const fallbackPage = await browser.newPage({ locale: 'it-IT', viewport: { width: 390, height: 844 } });
+    fallbackPage.on('pageerror', (error) => failures.push(error.message));
+    await fallbackPage.goto(origin + '/__site/index.html');
+    assert.equal(await fallbackPage.locator('html').getAttribute('lang'), 'en');
+    await fallbackPage.close();
+    console.log('Homepage language detection and manual override passed');
+  }
   for (const viewport of Array.of({ width: 1280, height: 900 }, { width: 390, height: 844 }, { width: 320, height: 740 })) {
     const page = await browser.newPage({ viewport, hasTouch: viewport.width < 500, isMobile: viewport.width < 500 });
     page.on('pageerror', (error) => failures.push(error.message));

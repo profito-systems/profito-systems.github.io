@@ -70,6 +70,35 @@ if (/fetch\s*\(|XMLHttpRequest|sendBeacon/i.test(indexHtml)) throw new Error('Ho
 const inlineScripts = Array.from(indexHtml.matchAll(/<script>([\s\S]*?)<\/script>/g), (match) => match[1]);
 for (const script of inlineScripts) new vm.Script(script, { filename: 'index.html inline script' });
 
+const localizationScript = inlineScripts.find((script) => script.includes('const translations ='));
+if (!localizationScript) throw new Error('Homepage localization script is missing.');
+const translationStart = localizationScript.indexOf('const translations =');
+const translationEnd = localizationScript.indexOf("let currentLang = 'en';");
+if (translationStart < 0 || translationEnd < translationStart) throw new Error('Unable to inspect homepage translations.');
+const localizationContext = {};
+vm.createContext(localizationContext);
+vm.runInContext(
+  localizationScript.slice(translationStart, translationEnd) + '\nglobalThis.translationsForCheck = translations;',
+  localizationContext,
+  { filename: 'index.html translations' },
+);
+const translationsForCheck = localizationContext.translationsForCheck;
+const supportedLanguages = Array.of('en', 'pl', 'de', 'fr', 'es');
+const localizationKeys = new Set(Array.from(
+  indexHtml.matchAll(/data-i18n(?:-(?:aria|alt|content))?="([^"]+)"/g),
+  (match) => match[1],
+));
+for (const language of supportedLanguages) {
+  if (!translationsForCheck[language]) throw new Error(`Homepage is missing ${language} translations.`);
+  for (const key of localizationKeys) {
+    if (!translationsForCheck[language][key]) throw new Error(`Homepage translation ${language} is missing key: ${key}`);
+  }
+  if (!indexHtml.includes(`data-lang="${language}"`)) throw new Error(`Homepage language switcher is missing: ${language}`);
+}
+if (!localizationScript.includes('navigator.languages')) throw new Error('Homepage must detect the browser preferred language.');
+if (!localizationScript.includes("localStorage.setItem(languageStorageKey")) throw new Error('Homepage must remember a manual language choice.');
+if (!localizationScript.includes('setLanguage(detectPreferredLanguage())')) throw new Error('Homepage must initialize from the preferred language.');
+
 const miarkaHtml = fs.readFileSync(path.join(root, 'miarka/index.html'), 'utf8');
 if (miarkaHtml.includes('src="https://docs.opencv.org/')) throw new Error('Production Miarka must lazy-load OpenCV.');
 for (const id of Array.of('file', 'cameraFile', 'fileName', 'sampleBtn', 'autoDetectBtn', 'manualCornersBtn', 'measurementPanel', 'measureWidthBtn', 'measureHeightBtn', 'sendAreaBtn', 'result', 'inputCanvas', 'warpedCanvas', 'knownLength', 'brickFace', 'zoomInBtn', 'swapReferenceBtn', 'exportPhotoBtn')) {
