@@ -349,21 +349,58 @@
       return translations[currentLang][key] || translations.en[key] || key;
     }
 
-    function setLanguage(lang) {
-      currentLang = translations[lang] ? lang : 'en';
+    const languageStorageKey = 'profitoLanguage';
+
+    function supportedLanguage(tag) {
+      const normalized = String(tag || '').toLowerCase().replace('_', '-');
+      const primary = normalized.split('-')[0];
+      return translations[primary] ? primary : null;
+    }
+
+    function detectPreferredLanguage() {
+      try {
+        const saved = supportedLanguage(localStorage.getItem(languageStorageKey));
+        if (saved) return saved;
+      } catch (error) {
+        // Storage may be unavailable in privacy modes. Browser preference remains a safe fallback.
+      }
+
+      const browserLanguages = Array.isArray(navigator.languages) && navigator.languages.length
+        ? navigator.languages
+        : Array.of(navigator.language);
+
+      for (const tag of browserLanguages) {
+        const detected = supportedLanguage(tag);
+        if (detected) return detected;
+      }
+
+      return 'en';
+    }
+
+    function setLanguage(lang, persist = false) {
+      currentLang = supportedLanguage(lang) || 'en';
       document.documentElement.lang = currentLang;
       document.querySelectorAll('[data-i18n]').forEach((element) => {
         const key = element.dataset.i18n;
         if (translations[currentLang][key]) element.textContent = translations[currentLang][key];
       });
       document.querySelectorAll('.lang-btn').forEach((button) => {
-        button.classList.toggle('active', button.dataset.lang === currentLang);
+        const active = button.dataset.lang === currentLang;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
       });
+      if (persist) {
+        try {
+          localStorage.setItem(languageStorageKey, currentLang);
+        } catch (error) {
+          // The page remains usable even when browser storage is blocked.
+        }
+      }
       buildSupplierLinks();
     }
 
     document.querySelectorAll('.lang-btn').forEach((button) => {
-      button.addEventListener('click', () => setLanguage(button.dataset.lang));
+      button.addEventListener('click', () => setLanguage(button.dataset.lang, true));
     });
 
     document.getElementById('calcForm').addEventListener('submit', function (event) {
@@ -438,7 +475,7 @@
       }
     });
 
-    setLanguage('en');
+    setLanguage(detectPreferredLanguage());
   </script>
 
   <script>
