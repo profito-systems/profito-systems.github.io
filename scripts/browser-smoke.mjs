@@ -37,34 +37,46 @@ const assertLength = (text, expected) => assert.ok(Math.abs(Number.parseFloat(te
 
 try {
   if (production) {
-    const polishPage = await browser.newPage({ locale: 'pl-PL', viewport: { width: 390, height: 844 } });
+    const polishPage = await browser.newPage({ locale: 'pl-PL', timezoneId: 'Europe/London', viewport: { width: 390, height: 844 } });
     polishPage.on('pageerror', (error) => failures.push(error.message));
     await polishPage.goto(origin + '/__site/index.html');
     assert.equal(await polishPage.locator('html').getAttribute('lang'), 'pl');
     assert.equal(await polishPage.locator('[data-i18n="nav_planner"]').textContent(), 'Zaplanuj projekt');
     assert.equal(await polishPage.locator('[data-lang="pl"]').getAttribute('aria-pressed'), 'true');
     assert.equal(await polishPage.locator('[data-lang="fr"]').count(), 1);
+    assert.equal(await polishPage.locator('#supplierCountry').inputValue(), 'GB', 'timezone should keep a Polish-language visitor in the UK market');
+    assert.equal(await polishPage.locator('#tradeCountry').inputValue(), 'GB');
+
+    await polishPage.locator('#supplierCountry').selectOption('PL');
+    assert.equal(await polishPage.locator('#tradeCountry').inputValue(), 'PL', 'country selectors must stay synchronized');
+    assert.equal(await polishPage.evaluate(() => localStorage.getItem('profitoCountry')), 'PL');
+    assert.equal(await polishPage.locator('#supplierArea').inputValue(), '00-001');
+    const firstSupplierHref = await polishPage.locator('#supplierLinks a').first().getAttribute('href');
+    assert.ok(decodeURIComponent(firstSupplierHref).includes('Poland'), 'supplier links must include the selected country');
 
     await polishPage.locator('[data-lang="de"]').click();
     assert.equal(await polishPage.locator('html').getAttribute('lang'), 'de');
     assert.equal(await polishPage.evaluate(() => localStorage.getItem('profitoLanguage')), 'de');
     await polishPage.reload();
     assert.equal(await polishPage.locator('html').getAttribute('lang'), 'de', 'manual language choice must survive reload');
+    assert.equal(await polishPage.locator('#supplierCountry').inputValue(), 'PL', 'manual country choice must survive reload');
     await polishPage.close();
 
-    const frenchPage = await browser.newPage({ locale: 'fr-FR', viewport: { width: 390, height: 844 } });
+    const frenchPage = await browser.newPage({ locale: 'fr-FR', timezoneId: 'Europe/Paris', viewport: { width: 390, height: 844 } });
     frenchPage.on('pageerror', (error) => failures.push(error.message));
     await frenchPage.goto(origin + '/__site/index.html');
     assert.equal(await frenchPage.locator('html').getAttribute('lang'), 'fr');
+    assert.equal(await frenchPage.locator('#supplierCountry').inputValue(), 'FR');
     assert.equal(await frenchPage.locator('[data-i18n="planner_title"]').textContent(), 'Comprendre le chantier avant de demander un devis');
     await frenchPage.close();
 
-    const fallbackPage = await browser.newPage({ locale: 'it-IT', viewport: { width: 390, height: 844 } });
+    const fallbackPage = await browser.newPage({ locale: 'it-IT', timezoneId: 'UTC', viewport: { width: 390, height: 844 } });
     fallbackPage.on('pageerror', (error) => failures.push(error.message));
     await fallbackPage.goto(origin + '/__site/index.html');
     assert.equal(await fallbackPage.locator('html').getAttribute('lang'), 'en');
+    assert.equal(await fallbackPage.locator('#supplierCountry').inputValue(), 'GB');
     await fallbackPage.close();
-    console.log('Homepage language detection and manual override passed');
+    console.log('Homepage language and country detection plus manual overrides passed');
   }
   for (const viewport of Array.of({ width: 1280, height: 900 }, { width: 390, height: 844 }, { width: 320, height: 740 })) {
     const page = await browser.newPage({ viewport, hasTouch: viewport.width < 500, isMobile: viewport.width < 500 });

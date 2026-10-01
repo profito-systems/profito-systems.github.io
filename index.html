@@ -112,6 +112,7 @@
             <a class="btn-primary" href="#quote" data-i18n="estimate_brief">Prepare a project brief</a>
           </div>
           <p class="source-note"><span data-i18n="source_note">Price context: current UK examples from</span> <a href="https://www.checkatrade.com/blog/cost-guides/tiling-cost/" target="_blank" rel="noopener noreferrer">Checkatrade</a>, <a href="https://www.wickes.co.uk/Products/Tiles/All-Tiles/c/1070003" target="_blank" rel="noopener noreferrer">Wickes</a> <span data-i18n="source_and">and</span> <a href="https://www.toppstiles.co.uk/wall-tiles" target="_blank" rel="noopener noreferrer">Topps Tiles</a>.</p>
+          <p class="source-note" data-i18n="pricing_scope">Budget figures are currently a UK benchmark in GBP. The country setting changes local searches, not the pricing model.</p>
         </aside>
       </div>
     </section>
@@ -168,6 +169,16 @@
         <h2 data-i18n="suppliers_title">Find nearby material suppliers</h2>
         <p data-i18n="suppliers_text">Enter a UK postcode or area. Profito.system creates map-search links for common builders' merchants and DIY suppliers nearby.</p>
         <div class="supplier-controls">
+          <div class="input-group">
+            <label for="supplierCountry" data-i18n="country_label">Country</label>
+            <select id="supplierCountry" class="country-select" aria-describedby="supplierPrivacy">
+              <option value="GB" data-country-label="GB">United Kingdom</option>
+              <option value="PL" data-country-label="PL">Poland</option>
+              <option value="DE" data-country-label="DE">Germany</option>
+              <option value="FR" data-country-label="FR">France</option>
+              <option value="ES" data-country-label="ES">Spain</option>
+            </select>
+          </div>
           <div class="input-group supplier-input">
             <label for="supplierArea" data-i18n="suppliers_label">Postcode or area</label>
             <input id="supplierArea" value="TW8" autocomplete="postal-code" aria-describedby="supplierPrivacy">
@@ -213,9 +224,19 @@
               <label for="tradeType" data-i18n="trade_type">Trade</label>
               <select id="tradeType">
                 <option value="tiler" data-i18n="trade_tiler">Tiler</option>
-                <option value="painter decorator" data-i18n="trade_painter">Painter & decorator</option>
-                <option value="flooring installer" data-i18n="trade_flooring">Flooring installer</option>
-                <option value="handyman property repairs" data-i18n="trade_repairs">Property repairs</option>
+                <option value="painter" data-i18n="trade_painter">Painter & decorator</option>
+                <option value="flooring" data-i18n="trade_flooring">Flooring installer</option>
+                <option value="repairs" data-i18n="trade_repairs">Property repairs</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label for="tradeCountry" data-i18n="country_label">Country</label>
+              <select id="tradeCountry" class="country-select">
+                <option value="GB" data-country-label="GB">United Kingdom</option>
+                <option value="PL" data-country-label="PL">Poland</option>
+                <option value="DE" data-country-label="DE">Germany</option>
+                <option value="FR" data-country-label="FR">France</option>
+                <option value="ES" data-country-label="ES">Spain</option>
               </select>
             </div>
             <div class="input-group">
@@ -457,6 +478,48 @@
       planner_brief_text: 'Projet de carrelage d’environ {area} m², niveau de matériaux {tier}. Fourchette indicative matériaux et main-d’œuvre : {range}. Le devis final dépend de la préparation, de la dépose, de l’état du support, de l’étanchéité, du motif, de l’accès et de l’évacuation des déchets.', planner_priority_text: 'Fourchette indicative {range}'
     };
 
+    const countryTranslationAdditions = {
+      en: {
+        country_label: 'Country', country_GB: 'United Kingdom', country_PL: 'Poland', country_DE: 'Germany', country_FR: 'France', country_ES: 'Spain',
+        suppliers_text: 'Choose a country and enter a postcode, city or area. Profito.system creates local map searches for useful building-supply categories.',
+        suppliers_privacy: 'The country and area stay in your browser and are used only to build map-search links. Profito.system does not store them.',
+        pricing_scope: 'Budget figures are currently a UK benchmark in GBP. The country setting changes local searches, not the pricing model.',
+        supplier_category_materials: 'Building materials', supplier_category_tiles: 'Tiles', supplier_category_diy: 'DIY & home improvement', supplier_category_paint: 'Paint & decorating', supplier_category_plumbing: 'Plumbing supplies', supplier_category_tools: 'Tools'
+      },
+      pl: {
+        country_label: 'Kraj', country_GB: 'Wielka Brytania', country_PL: 'Polska', country_DE: 'Niemcy', country_FR: 'Francja', country_ES: 'Hiszpania',
+        suppliers_text: 'Wybierz kraj i wpisz kod pocztowy, miasto lub okolicę. Profito.system utworzy lokalne wyszukiwania przydatnych kategorii sklepów budowlanych.',
+        suppliers_privacy: 'Kraj i okolica pozostają w przeglądarce i służą tylko do tworzenia linków wyszukiwania. Profito.system ich nie zapisuje.',
+        pricing_scope: 'Kwoty budżetowe są obecnie brytyjskim benchmarkiem w GBP. Wybór kraju zmienia lokalne wyszukiwanie, a nie model cenowy.',
+        supplier_category_materials: 'Materiały budowlane', supplier_category_tiles: 'Płytki', supplier_category_diy: 'Dom i remont', supplier_category_paint: 'Farby i dekoracja', supplier_category_plumbing: 'Hydraulika', supplier_category_tools: 'Narzędzia'
+      },
+      de: {
+        country_label: 'Land', country_GB: 'Vereinigtes Königreich', country_PL: 'Polen', country_DE: 'Deutschland', country_FR: 'Frankreich', country_ES: 'Spanien',
+        suppliers_text: 'Wähle ein Land und gib Postleitzahl, Stadt oder Gebiet ein. Profito.system erstellt lokale Kartensuchen für nützliche Baustoffkategorien.',
+        suppliers_privacy: 'Land und Gebiet bleiben im Browser und werden nur zum Erstellen von Kartensuchlinks verwendet. Profito.system speichert sie nicht.',
+        pricing_scope: 'Die Budgetwerte sind derzeit ein britischer Richtwert in GBP. Die Länderauswahl ändert die lokale Suche, nicht das Preismodell.',
+        supplier_category_materials: 'Baustoffe', supplier_category_tiles: 'Fliesen', supplier_category_diy: 'Baumarkt & Heimwerken', supplier_category_paint: 'Farben & Dekoration', supplier_category_plumbing: 'Sanitärbedarf', supplier_category_tools: 'Werkzeuge'
+      },
+      fr: {
+        country_label: 'Pays', country_GB: 'Royaume-Uni', country_PL: 'Pologne', country_DE: 'Allemagne', country_FR: 'France', country_ES: 'Espagne',
+        suppliers_text: 'Choisissez un pays et saisissez un code postal, une ville ou une zone. Profito.system crée des recherches locales par catégories utiles de fournisseurs du bâtiment.',
+        suppliers_privacy: 'Le pays et la zone restent dans votre navigateur et servent uniquement à créer des liens de recherche cartographique. Profito.system ne les stocke pas.',
+        pricing_scope: 'Les montants budgétaires sont actuellement une référence britannique en GBP. Le choix du pays modifie les recherches locales, pas le modèle de prix.',
+        supplier_category_materials: 'Matériaux de construction', supplier_category_tiles: 'Carrelage', supplier_category_diy: 'Bricolage & maison', supplier_category_paint: 'Peinture & décoration', supplier_category_plumbing: 'Fournitures plomberie', supplier_category_tools: 'Outils'
+      },
+      es: {
+        country_label: 'País', country_GB: 'Reino Unido', country_PL: 'Polonia', country_DE: 'Alemania', country_FR: 'Francia', country_ES: 'España',
+        suppliers_text: 'Elige un país e introduce un código postal, ciudad o zona. Profito.system crea búsquedas locales por categorías útiles de suministros de construcción.',
+        suppliers_privacy: 'El país y la zona permanecen en tu navegador y solo se usan para crear enlaces de búsqueda en el mapa. Profito.system no los guarda.',
+        pricing_scope: 'Las cifras de presupuesto son actualmente una referencia británica en GBP. El país cambia las búsquedas locales, no el modelo de precios.',
+        supplier_category_materials: 'Materiales de construcción', supplier_category_tiles: 'Azulejos', supplier_category_diy: 'Bricolaje y hogar', supplier_category_paint: 'Pintura y decoración', supplier_category_plumbing: 'Suministros de fontanería', supplier_category_tools: 'Herramientas'
+      }
+    };
+
+    for (const lang of Object.keys(countryTranslationAdditions)) {
+      Object.assign(translations[lang], countryTranslationAdditions[lang]);
+    }
+
     let currentLang = 'en';
 
     function t(key) {
@@ -491,6 +554,87 @@
       return 'en';
     }
 
+    const countryStorageKey = 'profitoCountry';
+    const countryData = {
+      GB: { searchName: 'United Kingdom', defaultArea: 'TW8', timeZones: Array.of('Europe/London') },
+      PL: { searchName: 'Poland', defaultArea: '00-001', timeZones: Array.of('Europe/Warsaw') },
+      DE: { searchName: 'Germany', defaultArea: '10115', timeZones: Array.of('Europe/Berlin', 'Europe/Busingen') },
+      FR: { searchName: 'France', defaultArea: '75001', timeZones: Array.of('Europe/Paris') },
+      ES: { searchName: 'Spain', defaultArea: '28001', timeZones: Array.of('Europe/Madrid', 'Atlantic/Canary') }
+    };
+    let currentCountry = 'GB';
+
+    function supportedCountry(code) {
+      const normalized = String(code || '').toUpperCase();
+      return countryData[normalized] ? normalized : null;
+    }
+
+    function localeCountry(tag) {
+      const parts = String(tag || '').replace('_', '-').split('-');
+      for (const part of parts.slice(1)) {
+        const code = supportedCountry(part);
+        if (code) return code;
+      }
+      return null;
+    }
+
+    function detectPreferredCountry() {
+      try {
+        const saved = supportedCountry(localStorage.getItem(countryStorageKey));
+        if (saved) return saved;
+      } catch (error) {
+        // Storage may be unavailable. Browser hints remain a safe fallback.
+      }
+
+      try {
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        for (const entry of Object.entries(countryData)) {
+          if (entry[1].timeZones.includes(timeZone)) return entry[0];
+        }
+      } catch (error) {
+        // Ignore unavailable or unusual timezone implementations.
+      }
+
+      const browserLanguages = Array.isArray(navigator.languages) && navigator.languages.length
+        ? navigator.languages
+        : Array.of(navigator.language);
+      for (const tag of browserLanguages) {
+        const detected = localeCountry(tag);
+        if (detected) return detected;
+      }
+
+      return 'GB';
+    }
+
+    function syncCountryAreaDefaults(previousCountry, nextCountry) {
+      const previousDefault = countryData[previousCountry]?.defaultArea;
+      const nextDefault = countryData[nextCountry].defaultArea;
+      for (const id of Array.of('supplierArea', 'tradePostcode', 'plannerPostcode')) {
+        const input = document.getElementById(id);
+        if (!input) continue;
+        const value = input.value.trim();
+        if (!value || value === previousDefault) input.value = nextDefault;
+      }
+    }
+
+    function setCountry(code, persist = false) {
+      const nextCountry = supportedCountry(code) || 'GB';
+      const previousCountry = currentCountry;
+      currentCountry = nextCountry;
+      document.querySelectorAll('.country-select').forEach((select) => {
+        select.value = currentCountry;
+      });
+      if (previousCountry !== currentCountry) syncCountryAreaDefaults(previousCountry, currentCountry);
+      if (persist) {
+        try {
+          localStorage.setItem(countryStorageKey, currentCountry);
+        } catch (error) {
+          // Local search still works when storage is blocked.
+        }
+      }
+      buildSupplierLinks();
+    }
+
     function setLanguage(lang, persist = false) {
       currentLang = supportedLanguage(lang) || 'en';
       document.documentElement.lang = currentLang;
@@ -509,6 +653,10 @@
       document.querySelectorAll('[data-i18n-content]').forEach((element) => {
         const value = translations[currentLang][element.dataset.i18nContent];
         if (value) element.setAttribute('content', value);
+      });
+      document.querySelectorAll('[data-country-label]').forEach((option) => {
+        const value = t('country_' + option.dataset.countryLabel);
+        if (value) option.textContent = value;
       });
       document.querySelectorAll('.lang-btn').forEach((button) => {
         const active = button.dataset.lang === currentLang;
@@ -542,27 +690,40 @@
       document.getElementById('areaResult').textContent = `${(length * width).toFixed(2)} m²`;
     });
 
-    const suppliers = ['Topps Tiles', 'Tile Giant', 'Wickes', 'B&Q', 'Screwfix', 'Toolstation', 'Travis Perkins', 'Jewson', 'Selco Builders Warehouse'];
+    const supplierCategories = Array.of(
+      { key: 'supplier_category_materials', query: 'building materials supplier' },
+      { key: 'supplier_category_tiles', query: 'tile shop' },
+      { key: 'supplier_category_diy', query: 'DIY home improvement store' },
+      { key: 'supplier_category_paint', query: 'paint decorating shop' },
+      { key: 'supplier_category_plumbing', query: 'plumbing supplies' },
+      { key: 'supplier_category_tools', query: 'tool shop' }
+    );
 
     function buildSupplierLinks() {
-      const area = document.getElementById('supplierArea').value.trim() || 'TW8';
+      const country = countryData[currentCountry];
+      const areaInput = document.getElementById('supplierArea');
+      const area = areaInput.value.trim() || country.defaultArea;
       const container = document.getElementById('supplierLinks');
       container.replaceChildren();
-      suppliers.forEach((supplier) => {
+      supplierCategories.forEach((category) => {
         const link = document.createElement('a');
-        const query = `${supplier} building materials near ${area} UK`;
-        link.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+        const query = category.query + ' near ' + area + ', ' + country.searchName;
+        link.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query);
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
         link.className = 'supplier-link';
         const name = document.createElement('strong');
-        name.textContent = supplier;
+        name.textContent = t(category.key);
         const action = document.createElement('span');
         action.textContent = t('suppliers_open');
         link.append(name, action);
         container.appendChild(link);
       });
     }
+
+    document.querySelectorAll('.country-select').forEach((select) => {
+      select.addEventListener('change', () => setCountry(select.value, true));
+    });
 
     document.getElementById('buildSupplierLinks').addEventListener('click', buildSupplierLinks);
     document.getElementById('supplierArea').addEventListener('keydown', (event) => {
@@ -607,6 +768,7 @@
       }
     });
 
+    setCountry(detectPreferredCountry());
     setLanguage(detectPreferredLanguage());
   </script>
 
@@ -623,6 +785,14 @@
       de: 'de-DE',
       fr: 'fr-FR',
       es: 'es-ES'
+    };
+
+    const tradeSearchTerms = {
+      GB: { tiler: 'tiler', painter: 'painter decorator', flooring: 'flooring installer', repairs: 'handyman property repairs' },
+      PL: { tiler: 'glazurnik', painter: 'malarz', flooring: 'montaż podłóg', repairs: 'naprawy remontowe' },
+      DE: { tiler: 'Fliesenleger', painter: 'Maler', flooring: 'Bodenleger', repairs: 'Handwerker Reparaturen' },
+      FR: { tiler: 'carreleur', painter: 'peintre décorateur', flooring: 'poseur de sol', repairs: 'réparations habitat' },
+      ES: { tiler: 'alicatador', painter: 'pintor decorador', flooring: 'instalador de suelos', repairs: 'reparaciones hogar' }
     };
 
     function formatTranslation(key, values = {}) {
@@ -704,9 +874,11 @@
     });
 
     document.getElementById('tradeSearchButton').addEventListener('click', function () {
-      const trade = document.getElementById('tradeType').value;
-      const area = document.getElementById('tradePostcode').value.trim() || 'West London';
-      const query = trade + ' near ' + area + ' UK';
+      const tradeKey = document.getElementById('tradeType').value;
+      const country = countryData[currentCountry];
+      const area = document.getElementById('tradePostcode').value.trim() || country.defaultArea;
+      const searchTerm = tradeSearchTerms[currentCountry]?.[tradeKey] || tradeSearchTerms.GB[tradeKey] || tradeKey;
+      const query = searchTerm + ' near ' + area + ', ' + country.searchName;
       window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(query), '_blank', 'noopener,noreferrer');
     });
 
