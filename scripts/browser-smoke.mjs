@@ -26,7 +26,8 @@ await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 const origin = 'http://127.0.0.1:' + server.address().port;
 const browser = await chromium.launch({ headless: true, ...(process.env.CHROMIUM_EXECUTABLE_PATH
   ? { executablePath: process.env.CHROMIUM_EXECUTABLE_PATH } : {}) });
-const fixture = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="800"><rect width="1000" height="800" fill="#334155"/><rect x="100" y="100" width="300" height="200" fill="white"/><path d="M100 500V100H700" fill="none" stroke="#38bdf8" stroke-width="4"/></svg>');
+const fixture = fs.readFileSync(path.join(siteRoot, 'sample-a4.jpg'));
+const unsupportedFixture = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="800"><rect width="1000" height="800" fill="#334155"/></svg>');
 const failures = Array.of();
 const assertLength = (text, expected) => assert.ok(Math.abs(Number.parseFloat(text) - expected) < 1, text + ' differs from ' + expected + 'mm by more than touch-coordinate tolerance');
 
@@ -41,8 +42,10 @@ try {
     await page.getByText('Własny prostokąt', { exact: true }).click();
     await page.locator('#customLong').fill('300');
     await page.locator('#customShort').fill('200');
-    await page.locator('#file').setInputFiles({ name: 'reference.svg', mimeType: 'image/svg+xml', buffer: fixture });
+    await page.locator('#file').setInputFiles({ name: 'reference.jpg', mimeType: 'image/jpeg', buffer: fixture });
     await page.waitForFunction(() => !document.getElementById('manualCornersBtn').disabled);
+    assert.equal(await page.evaluate(() => currentImage instanceof HTMLCanvasElement), true, 'loaded photo should be retained only as a bounded working canvas');
+    const imageHeightOverWidth = await page.evaluate(() => inputCanvas.height / inputCanvas.width);
     const clickPoint = async (x, y) => {
       const canvas = page.locator('#inputCanvas');
       const box = await canvas.boundingBox();
@@ -51,16 +54,16 @@ try {
     };
     const calibrate = async () => {
       await page.locator('#manualCornersBtn').click();
-      for (const point of Array.of({ x: 400, y: 300 }, { x: 100, y: 100 }, { x: 400, y: 100 }, { x: 100, y: 300 })) {
+      for (const point of Array.of({ x: 500, y: 180 }, { x: 100, y: 100 }, { x: 500, y: 100 }, { x: 100, y: 180 })) {
         await clickPoint(point.x, point.y);
       }
       assert.equal(await page.locator('#measurementPanel').isVisible(), true);
     };
     const measure = async () => {
       await page.locator('#measureWidthBtn').click();
-      await clickPoint(100, 100); await clickPoint(700, 100);
+      await clickPoint(100, 100); await clickPoint(900, 100);
       await page.locator('#measureHeightBtn').click();
-      await clickPoint(100, 100); await clickPoint(100, 500);
+      await clickPoint(100, 100); await clickPoint(100, 260);
     };
     await calibrate();
     await measure();
@@ -69,6 +72,10 @@ try {
     assert.equal(await page.locator('#areaResult').textContent(), '0.24 m²');
     assert.equal(await page.locator('#sendAreaBtn').isEnabled(), true);
     assert.equal(detectorRequests, 0, 'manual measurement must not download OpenCV');
+    await page.locator('#clearMeasuresBtn').click();
+    assert.equal(await page.locator('#sendAreaBtn').isEnabled(), false);
+    assert.equal(await page.locator('#sendAreaBtn').getAttribute('data-area'), null);
+    await measure();
 
     await page.locator('#swapReferenceBtn').click();
     assertLength(await page.locator('#widthResult').textContent(), 400);
@@ -78,11 +85,11 @@ try {
     if (viewport.width === 1280) {
       await page.locator('#inputCanvas').scrollIntoViewIfNeeded();
       const box = await page.locator('#inputCanvas').boundingBox();
-      await page.mouse.move(box.x + 700 * box.width / 1000, box.y + 100 * box.height / 800);
+      await page.mouse.move(box.x + 900 * box.width / 1000, box.y + 100 * box.height / 800);
       await page.mouse.down();
-      await page.mouse.move(box.x + 600 * box.width / 1000, box.y + 100 * box.height / 800, { steps: 5 });
+      await page.mouse.move(box.x + 800 * box.width / 1000, box.y + 100 * box.height / 800, { steps: 5 });
       await page.mouse.up();
-      assertLength(await page.locator('#widthResult').textContent(), 500);
+      assertLength(await page.locator('#widthResult').textContent(), 525);
       await measure();
     }
 
@@ -131,8 +138,8 @@ try {
     assert.equal(await page.locator('#referencePreviewCard').isVisible(), false);
     assert.equal(await page.locator('#autoDetectBtn').isEnabled(), false);
     await measure();
-    assertLength(await page.locator('#widthResult').textContent(), 600);
-    assertLength(await page.locator('#heightResult').textContent(), 400);
+    assertLength(await page.locator('#widthResult').textContent(), 800);
+    assertLength(await page.locator('#heightResult').textContent(), 200 * imageHeightOverWidth);
 
     // Changing dimensions invalidates old results and the planner handoff.
     await page.locator('#knownLength').fill('200');
@@ -155,6 +162,15 @@ try {
       await calibrate(); await measure();
       await page.screenshot({ path: process.env.MIARKA_SCREENSHOT_PATH, fullPage: true });
     }
+    // Unsupported active content must be rejected and invalidate the previous result.
+    await page.locator('#file').setInputFiles({
+      name: 'unsupported.svg', mimeType: 'image/svg+xml', buffer: unsupportedFixture,
+    });
+    assert.match(await page.locator('#result').textContent(), /JPG, PNG i WebP/);
+    assert.equal(await page.locator('#canvases').isVisible(), false);
+    assert.equal(await page.locator('#measurementPanel').isVisible(), false);
+    assert.equal(await page.locator('#sendAreaBtn').getAttribute('data-area'), null);
+
     // Rejecting a new oversized photo must remove the previous result everywhere.
     await page.locator('#file').setInputFiles({
       name: 'oversized.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(31 * 1024 * 1024),
@@ -166,7 +182,7 @@ try {
     assert.equal(await page.locator('#sendAreaBtn').isEnabled(), false);
     assert.equal(await page.locator('#areaResult').textContent(), '—');
     assert.equal(await page.locator('#sendAreaBtn').getAttribute('data-area'), null);
-    await page.locator('#file').setInputFiles({ name: 'valid-again.svg', mimeType: 'image/svg+xml', buffer: fixture });
+    await page.locator('#file').setInputFiles({ name: 'valid-again.jpg', mimeType: 'image/jpeg', buffer: fixture });
     await page.waitForFunction(() => !document.getElementById('manualCornersBtn').disabled);
     await page.getByText('Własny prostokąt', { exact: true }).click();
     await calibrate(); await measure();
@@ -196,7 +212,14 @@ try {
   assert.equal(retryResult.staleScripts, 0);
   assert.equal(retryResult.ready, true);
   assert.equal(runtimeRequests, 2);
-  console.log('Loaded but aborted OpenCV executes a replacement script on retry');
+  const recoveredAfterLoss = await retryPage.evaluate(async () => {
+    globalThis.cv = undefined;
+    await ensureOpenCv(3000);
+    return typeof cv.imread === 'function' && typeof cv.Mat === 'function';
+  });
+  assert.equal(recoveredAfterLoss, true);
+  assert.equal(runtimeRequests, 3);
+  console.log('OpenCV retries after timeout and after a previously ready runtime disappears');
   await retryPage.close();
   if (process.env.OPENCV_TEST_SCRIPT) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
