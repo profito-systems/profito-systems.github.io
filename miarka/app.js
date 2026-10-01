@@ -52,11 +52,30 @@ let referenceSidesSwapped = false;
 let zoom = 1;
 let pointerAction = null;
 const dimensionDrafts = new Map();
+const MAX_FILE_BYTES = 30 * 1024 * 1024;
+const MAX_IMAGE_PIXELS = 60 * 1000 * 1000;
+const SUPPORTED_IMAGE_TYPES = new Set(Array.of('image/jpeg', 'image/png', 'image/webp'));
 const brickSizes = {
   'uk-face': { width: 215, height: 65 }, 'uk-top': { width: 215, height: 102.5 },
   'uk-end': { width: 102.5, height: 65 }, 'pl-face': { width: 250, height: 65 },
   'pl-top': { width: 250, height: 120 }, 'pl-end': { width: 120, height: 65 },
 };
+
+function isSupportedImageFile(file) {
+  const type = (file.type || '').toLowerCase();
+  if (SUPPORTED_IMAGE_TYPES.has(type)) return true;
+  return !type && /\.(?:jpe?g|png|webp)$/i.test(file.name || '');
+}
+
+function releaseWorkingImage() {
+  if (currentImage && typeof currentImage.getContext === 'function') {
+    currentImage.width = 1;
+    currentImage.height = 1;
+  }
+  currentImage = null;
+  inputCanvas.width = 1;
+  inputCanvas.height = 1;
+}
 
 function setStatus(message, tone = '') {
   resultEl.textContent = message;
@@ -183,17 +202,26 @@ undoPointBtn.addEventListener('click', () => {
 function loadImageFile(file) {
   if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl);
   activeObjectUrl = null;
-  currentImage = null;
-  fileNameEl.textContent = file.name;
+  releaseWorkingImage();
+  fileNameEl.textContent = file.name || 'Wybrane zdjęcie';
   canvasesEl.classList.add('is-hidden');
   resetCalibration();
-  if (file.size > 30 * 1024 * 1024) {
+  if (!isSupportedImageFile(file)) {
+    setStatus('Obsługiwane są zdjęcia JPG, PNG i WebP. Wybierz zwykłe zdjęcie zamiast SVG, GIF lub dokumentu.', 'is-error');
+    return;
+  }
+  if (!Number.isFinite(file.size) || file.size <= 0) {
+    setStatus('Plik jest pusty albo nie można odczytać jego rozmiaru.', 'is-error');
+    return;
+  }
+  if (file.size > MAX_FILE_BYTES) {
     setStatus('Zdjęcie przekracza 30 MB. Wybierz mniejszy plik.', 'is-error');
     return;
   }
   setStatus('Wczytuję zdjęcie…');
 
   const img = new Image();
+  img.decoding = 'async';
   const objectUrl = URL.createObjectURL(file);
   activeObjectUrl = objectUrl;
   img.src = objectUrl;
@@ -203,12 +231,36 @@ function loadImageFile(file) {
     URL.revokeObjectURL(objectUrl);
     activeObjectUrl = null;
 
-    const maxSide = 1800;
-    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
-    inputCanvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-    inputCanvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const naturalWidth = img.naturalWidth;
+    const naturalHeight = img.naturalHeight;
+    const pixels = naturalWidth * naturalHeight;
+    if (!Number.isFinite(pixels) || naturalWidth <= 0 || naturalHeight <= 0) {
+      img.onload = null;
+      img.onerror = null;
+      setStatus('Nie udało się odczytać wymiarów zdjęcia.', 'is-error');
+      return;
+    }
+    if (pixels > MAX_IMAGE_PIXELS) {
+      img.onload = null;
+      img.onerror = null;
+      setStatus('Zdjęcie ma zbyt wysoką rozdzielczość do bezpiecznej pracy na telefonie. Użyj zdjęcia do 60 megapikseli albo zmniejsz je przed wczytaniem.', 'is-error');
+      return;
+    }
 
-    currentImage = img;
+    const maxSide = 1800;
+    const scale = Math.min(1, maxSide / Math.max(naturalWidth, naturalHeight));
+    const targetWidth = Math.max(1, Math.round(naturalWidth * scale));
+    const targetHeight = Math.max(1, Math.round(naturalHeight * scale));
+    const workingImage = document.createElement('canvas');
+    workingImage.width = targetWidth;
+    workingImage.height = targetHeight;
+    workingImage.getContext('2d').drawImage(img, 0, 0, targetWidth, targetHeight);
+    img.onload = null;
+    img.onerror = null;
+
+    inputCanvas.width = targetWidth;
+    inputCanvas.height = targetHeight;
+    currentImage = workingImage;
     drawInputOverlay();
     canvasesEl.classList.remove('is-hidden');
     syncImageControls();
@@ -366,6 +418,7 @@ function applyReferenceCorners(corners, preserveMeasures = false, automatic = fa
     heightResult.textContent = '—';
     areaResult.textContent = '—';
     sendAreaBtn.disabled = true;
+    delete sendAreaBtn.dataset.area;
   } else {
     for (const key of Array.of('width', 'height')) {
       if (measurePoints[key].length === 2) measureDistance(key);
@@ -514,6 +567,7 @@ function updateArea() {
   if (!measuredMm.width || !measuredMm.height) {
     areaResult.textContent = '—';
     sendAreaBtn.disabled = true;
+    delete sendAreaBtn.dataset.area;
     return;
   }
 
@@ -521,6 +575,7 @@ function updateArea() {
   if (!Number.isFinite(areaM2) || areaM2 <= 0) {
     areaResult.textContent = '—';
     sendAreaBtn.disabled = true;
+    delete sendAreaBtn.dataset.area;
     return;
   }
   areaResult.textContent = areaM2.toFixed(2) + ' m²';
@@ -560,6 +615,7 @@ clearMeasuresBtn.addEventListener('click', () => {
   heightResult.textContent = '—';
   areaResult.textContent = '—';
   sendAreaBtn.disabled = true;
+  delete sendAreaBtn.dataset.area;
   inputCanvas.classList.add('is-interactive');
   canvasHelp.textContent = 'Wybierz szerokość albo wysokość, następnie kliknij dwa końce mierzonego odcinka na zdjęciu.';
   syncImageControls();

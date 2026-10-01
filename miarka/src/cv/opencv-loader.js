@@ -9,12 +9,16 @@ function ensureOpenCv(timeoutMs = 25000) {
   const pending = new Promise((resolve, reject) => {
     let finished = false, awaitedModule = null;
     let script = Array.from(document.scripts).find((item) => item.dataset.opencvLoader === 'true');
+    if (script?.dataset.opencvLoaded === 'true' && !ready(globalThis.cv)) {
+      script.remove();
+      script = null;
+    }
     const finish = (error, module) => {
       if (finished) return;
       finished = true;
       clearTimeout(deadline);
       clearInterval(poll);
-      script?.removeEventListener('load', checkReady);
+      script?.removeEventListener('load', onLoad);
       script?.removeEventListener('error', onError);
       if (error) {
         script?.remove();
@@ -39,6 +43,10 @@ function ensureOpenCv(timeoutMs = 25000) {
         });
       }
     };
+    const onLoad = () => {
+      if (script) script.dataset.opencvLoaded = 'true';
+      checkReady();
+    };
     const onError = () => {
       finish(new Error('Nie udało się pobrać automatycznego wykrywania.'));
     };
@@ -48,16 +56,21 @@ function ensureOpenCv(timeoutMs = 25000) {
       script = document.createElement('script');
       script.src = 'https://docs.opencv.org/4.13.0/opencv.js';
       script.async = true;
+      script.referrerPolicy = 'no-referrer';
       script.dataset.opencvLoader = 'true';
-      script.addEventListener('load', checkReady);
+      script.addEventListener('load', onLoad);
       script.addEventListener('error', onError);
       document.head.appendChild(script);
     } else {
-      script.addEventListener('load', checkReady);
+      script.addEventListener('load', onLoad);
       script.addEventListener('error', onError);
     }
     checkReady();
   });
-  openCvPromise = pending.catch((error) => { openCvPromise = null; throw error; });
-  return openCvPromise;
+  const shared = pending.then(
+    () => { if (openCvPromise === shared) openCvPromise = null; },
+    (error) => { if (openCvPromise === shared) openCvPromise = null; throw error; },
+  );
+  openCvPromise = shared;
+  return shared;
 }
