@@ -26,8 +26,8 @@ Limits: synthetic coordinates and the bundled sample do not establish accuracy o
 
 Readiness timeout now removes the stale OpenCV script and unusable module so a retry executes a replacement. Late rejected module callbacks cannot clear the newer runtime. Selecting a photo over 30 MB cancels the previous image load, invalidates the calibration, clears the planner handoff and hides the previous image.
 
-The thirteen-test suite passes, including regressions for these failures. Running the revised suite against the previous application revision produces four failures, confirming that the tests detect the original defects. Browser smoke includes oversized-photo recovery and an actually re-executed detector script after initialization timeout. These new browser cases were not executed in this environment because downloading the Chromium archive failed; previous browser results above apply to the earlier revision.
+The thirteen-test suite passes, including regressions for these failures. Running the revised suite against the previous application revision produces four failures, confirming that the tests detect the original defects. GitHub CI browser smoke passes at 1280 px with mouse and 390/320 px with touch, including oversized-photo recovery and an actually re-executed detector script after initialization timeout. Optional real OpenCV sample detection and parity were verified on the preceding revision and were not rerun by this CI workflow.
 
 ## Production synchronization
 
-Application and test files are copied one-way from canonical contech-measure commit cbc5d88aa0ccf9f454e6637b95787316024d2d16, PR 13 follow-up revision. Canonical PR 13 must be merged before PR 20. No live deployment of this follow-up was performed.
+Application and test files are copied one-way from canonical contech-measure main commit 2bde72b7c9b7f3ccb4916f8291489e6e6a32534f, merged from PR 13. Canonical main CI and Pages deployment passed before production PR 20 was merged. No live production deployment of this follow-up had been performed when this note was written.
