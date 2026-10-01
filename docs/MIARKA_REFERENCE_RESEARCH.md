@@ -14,7 +14,7 @@ Dimension sources: https://www.iso.org/es/contents/data/standard/03/14/31432.htm
 
 Manual calibration and measurements use pure JavaScript homography and Canvas2D, with no OpenCV dependency. OpenCV 4.13.0 is loaded only for optional automatic proposals. A shared loader waits for runtime readiness, has a deadline and permits retry. Legacy OpenCV Module thenables resolve to themselves: resolving a native Promise with that module loops indefinitely, so the loader resolves without a module value. Automatic detections are proposals requiring inspection.
 
-`npm run check` runs syntax/assembly validation, existing reference checks and ten regression tests covering perspective geometry, corner ordering, invalid references, known segments, runtime readiness, native Promise and legacy thenable modules, network retry and timeout recovery.
+`npm run check` runs syntax/assembly validation, existing reference checks and thirteen regression tests covering perspective geometry, corner ordering, invalid references, known segments, runtime readiness, native Promise and legacy thenable modules, network retry and timeout recovery.
 
 `npm run test:browser` requires Playwright plus its Chromium browser. Optional environment overrides: PLAYWRIGHT_MODULE_PATH, CHROMIUM_EXECUTABLE_PATH. OPENCV_TEST_SCRIPT may point to the official downloaded OpenCV 4.13.0 script to exercise real runtime detection without an external network dependency.
 
@@ -22,6 +22,12 @@ Verified in Chromium: desktop 1280 px and touch layouts 390/320 px; manual measu
 
 Limits: synthetic coordinates and the bundled sample do not establish accuracy on all customer photographs, lens distortion, nonplanar surfaces or depth differences. No live GitHub Pages deployment was verified by these tests.
 
-## Production source pin
+## Follow-up validation — 2026-10-01
 
-Copied one-way from canonical contech-measure commit f6aa356480b2b78a2dc4d137a741b706cd75b353, PR 13. Canonical CI run 36791155947 passed. Public app files and all three CV source files are identical to that revision.
+Readiness timeout now removes the stale OpenCV script and unusable module so a retry executes a replacement. Late rejected module callbacks cannot clear the newer runtime. Selecting a photo over 30 MB cancels the previous image load, invalidates the calibration, clears the planner handoff and hides the previous image.
+
+The thirteen-test suite passes, including regressions for these failures. Running the revised suite against the previous application revision produces four failures, confirming that the tests detect the original defects. Browser smoke includes oversized-photo recovery and an actually re-executed detector script after initialization timeout. These new browser cases were not executed in this environment because downloading the Chromium archive failed; previous browser results above apply to the earlier revision.
+
+## Production synchronization
+
+Application and test files are copied one-way from canonical contech-measure commit cbc5d88aa0ccf9f454e6637b95787316024d2d16, PR 13 follow-up revision. Canonical PR 13 must be merged before PR 20. No live deployment of this follow-up was performed.

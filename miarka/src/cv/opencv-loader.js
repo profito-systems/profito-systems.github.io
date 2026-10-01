@@ -6,7 +6,6 @@ function ensureOpenCv(timeoutMs = 25000) {
   // a native Promise result: Promise assimilation would loop indefinitely.
   if (ready(globalThis.cv)) return Promise.resolve();
   if (openCvPromise) return openCvPromise;
-  let retryableNetworkFailure = false;
   const pending = new Promise((resolve, reject) => {
     let finished = false, awaitedModule = null;
     let script = Array.from(document.scripts).find((item) => item.dataset.opencvLoader === 'true');
@@ -18,7 +17,8 @@ function ensureOpenCv(timeoutMs = 25000) {
       script?.removeEventListener('load', checkReady);
       script?.removeEventListener('error', onError);
       if (error) {
-        if (retryableNetworkFailure) script?.remove();
+        script?.remove();
+        if (!ready(globalThis.cv)) globalThis.cv = undefined;
         reject(error);
       } else {
         globalThis.cv = module;
@@ -26,6 +26,7 @@ function ensureOpenCv(timeoutMs = 25000) {
       }
     };
     const checkReady = () => {
+      if (finished) return;
       const module = globalThis.cv;
       if (ready(module)) { finish(null, module); return; }
       if (module && typeof module.then === 'function' && module !== awaitedModule) {
@@ -34,13 +35,11 @@ function ensureOpenCv(timeoutMs = 25000) {
           if (ready(resolved)) finish(null, resolved);
         }, (error) => {
           if (!finished && globalThis.cv === module) globalThis.cv = undefined;
-          retryableNetworkFailure = true;
           finish(error);
         });
       }
     };
     const onError = () => {
-      retryableNetworkFailure = true;
       finish(new Error('Nie udało się pobrać automatycznego wykrywania.'));
     };
     const deadline = setTimeout(() => finish(new Error('Automatyczne wykrywanie uruchamia się zbyt długo. Możesz wskazać wzorzec ręcznie.')), timeoutMs);

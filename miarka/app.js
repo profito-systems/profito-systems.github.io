@@ -121,6 +121,7 @@ function resetCalibration() {
   heightResult.textContent = '—';
   areaResult.textContent = '—';
   sendAreaBtn.disabled = true;
+  delete sendAreaBtn.dataset.area;
   drawInputOverlay();
   syncImageControls();
 }
@@ -180,19 +181,19 @@ undoPointBtn.addEventListener('click', () => {
 });
 
 function loadImageFile(file) {
+  if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl);
+  activeObjectUrl = null;
+  currentImage = null;
+  fileNameEl.textContent = file.name;
+  canvasesEl.classList.add('is-hidden');
+  resetCalibration();
   if (file.size > 30 * 1024 * 1024) {
     setStatus('Zdjęcie przekracza 30 MB. Wybierz mniejszy plik.', 'is-error');
     return;
   }
-  currentImage = null;
-  autoBtn.disabled = true;
-  manualCornersBtn.disabled = true;
-  fileNameEl.textContent = file.name;
   setStatus('Wczytuję zdjęcie…');
-  resetCalibration();
 
   const img = new Image();
-  if (activeObjectUrl) URL.revokeObjectURL(activeObjectUrl);
   const objectUrl = URL.createObjectURL(file);
   activeObjectUrl = objectUrl;
   img.src = objectUrl;
@@ -683,6 +684,7 @@ exportPhotoBtn.addEventListener('click', () => {
 });
 
 sendAreaBtn.addEventListener('click', () => {
+  if (sendAreaBtn.disabled || !currentImage || !activeGeometry) return;
   const area = Number(sendAreaBtn.dataset.area);
   if (!Number.isFinite(area) || area <= 0) return;
   try {

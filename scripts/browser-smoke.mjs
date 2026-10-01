@@ -155,9 +155,49 @@ try {
       await calibrate(); await measure();
       await page.screenshot({ path: process.env.MIARKA_SCREENSHOT_PATH, fullPage: true });
     }
+    // Rejecting a new oversized photo must remove the previous result everywhere.
+    await page.locator('#file').setInputFiles({
+      name: 'oversized.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(31 * 1024 * 1024),
+    });
+    assert.match(await page.locator('#result').textContent(), /30 MB/);
+    assert.equal(await page.locator('#fileName').textContent(), 'oversized.jpg');
+    assert.equal(await page.locator('#canvases').isVisible(), false);
+    assert.equal(await page.locator('#measurementPanel').isVisible(), false);
+    assert.equal(await page.locator('#sendAreaBtn').isEnabled(), false);
+    assert.equal(await page.locator('#areaResult').textContent(), '—');
+    assert.equal(await page.locator('#sendAreaBtn').getAttribute('data-area'), null);
+    await page.locator('#file').setInputFiles({ name: 'valid-again.svg', mimeType: 'image/svg+xml', buffer: fixture });
+    await page.waitForFunction(() => !document.getElementById('manualCornersBtn').disabled);
+    await page.getByText('Własny prostokąt', { exact: true }).click();
+    await calibrate(); await measure();
+    assert.equal(await page.locator('#areaResult').textContent(), '0.24 m²');
     console.log('Browser smoke passed: ' + viewport.width + 'px, ' + (viewport.width < 500 ? 'touch' : 'mouse'));
     await page.close();
   }
+  // A loaded but aborted runtime must execute a replacement script on retry.
+  const retryPage = await browser.newPage();
+  retryPage.on('pageerror', (error) => failures.push(error.message));
+  let runtimeRequests = 0;
+  await retryPage.route('https://docs.opencv.org/**', (route) => {
+    runtimeRequests++;
+    return route.fulfill({ contentType: 'text/javascript', body: runtimeRequests === 1
+      ? 'globalThis.cv = { aborted: true };'
+      : 'globalThis.cv = { imread() {}, Mat() {} };' });
+  });
+  await retryPage.goto(origin);
+  const retryResult = await retryPage.evaluate(async () => {
+    let timedOut = false;
+    try { await ensureOpenCv(1000); } catch (error) { timedOut = error.message.includes('zbyt długo'); }
+    const staleScripts = Array.from(document.scripts).filter((script) => script.dataset.opencvLoader === 'true').length;
+    await ensureOpenCv(3000);
+    return { timedOut, staleScripts, ready: typeof cv.imread === 'function' };
+  });
+  assert.equal(retryResult.timedOut, true);
+  assert.equal(retryResult.staleScripts, 0);
+  assert.equal(retryResult.ready, true);
+  assert.equal(runtimeRequests, 2);
+  console.log('Loaded but aborted OpenCV executes a replacement script on retry');
+  await retryPage.close();
   if (process.env.OPENCV_TEST_SCRIPT) {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     page.on('pageerror', (error) => failures.push(error.message));

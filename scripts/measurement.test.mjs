@@ -146,16 +146,40 @@ test('network failure removes stale script and the next attempt can succeed', as
   assert.equal(context.cv, module);
 });
 
-test('timeout is finite; retry also works if the existing script already fired load', async () => {
+test('readiness timeout removes the aborted module and executes a new script on retry', async () => {
   const { context, scripts, module } = loaderHarness();
+  context.cv = { aborted: true };
+  const waiting = context.ensureOpenCv(30);
+  const firstScript = scripts.at(0);
+  firstScript.dispatch('load');
+  await assert.rejects(waiting, /zbyt długo/);
+  assert.equal(scripts.length, 0);
+  assert.equal(context.cv, undefined);
+  const retry = context.ensureOpenCv(1000);
+  assert.equal(scripts.length, 1);
+  assert.notEqual(scripts.at(0), firstScript);
+  context.cv = module;
+  scripts.at(0).dispatch('load');
+  await retry;
+  assert.equal(context.cv, module);
+});
+
+test('late rejection from a timed-out module cannot remove the retry script or clear its runtime', async () => {
+  const { context, scripts, module } = loaderHarness();
+  let rejectOldModule;
+  context.cv = new Promise((_, reject) => { rejectOldModule = reject; });
   const waiting = context.ensureOpenCv(30);
   scripts.at(0).dispatch('load');
   await assert.rejects(waiting, /zbyt długo/);
   const retry = context.ensureOpenCv(1000);
-  assert.equal(scripts.length, 1);
+  const retryScript = scripts.at(0);
   context.cv = module;
-  await retry;
+  rejectOldModule(new Error('late aborted runtime'));
+  await Promise.resolve();
   assert.equal(context.cv, module);
+  assert.equal(scripts.at(0), retryScript);
+  retryScript.dispatch('load');
+  await retry;
 });
 
 test('rejected runtime promise cannot poison subsequent attempts', async () => {
@@ -169,4 +193,86 @@ test('rejected runtime promise cannot poison subsequent attempts', async () => {
   scripts.at(0).dispatch('load');
   await retry;
   assert.equal(context.cv, module);
+});
+
+function appHarness() {
+  const elements = new Map();
+  const images = Array.of();
+  const revoked = Array.of();
+  const canvasContext = new Proxy({}, { get: () => () => {} });
+  function element(id) {
+    if (!elements.has(id)) {
+      const classes = new Set();
+      const listeners = new Map();
+      elements.set(id, {
+        textContent: '', value: '', dataset: {}, style: {}, disabled: false,
+        width: 1000, height: 800, clientWidth: 1000,
+        classList: {
+          add: (name) => classes.add(name), remove: (name) => classes.delete(name),
+          contains: (name) => classes.has(name),
+          toggle(name, on) { if (on) classes.add(name); else classes.delete(name); },
+        },
+        addEventListener: (name, handler) => listeners.set(name, handler),
+        dispatch: (name) => listeners.get(name)?.(),
+        getContext: () => canvasContext,
+      });
+    }
+    return elements.get(id);
+  }
+  const context = {
+    console, setTimeout, clearTimeout,
+    document: {
+      getElementById: element,
+      querySelector: () => ({ value: 'a4' }),
+      querySelectorAll: () => Array.of(),
+    },
+    window: { addEventListener() {}, location: { href: '' } },
+    URL: { createObjectURL: () => 'blob:' + images.length, revokeObjectURL: (url) => revoked.push(url) },
+    Image: class { constructor() { this.naturalWidth = 1000; this.naturalHeight = 800; images.push(this); } },
+    localStorage: { setItem() { throw new Error('Invalidated result must not be transferred'); } },
+  };
+  vm.createContext(context);
+  const appPath = path.join(root, fs.existsSync(path.join(root, 'miarka')) ? 'miarka/app.js' : 'public/app.js');
+  vm.runInContext(fs.readFileSync(appPath, 'utf8'), context);
+  return { context, element, images, revoked, evaluate: (code) => vm.runInContext(code, context) };
+}
+
+test('oversized upload clears the previous photo, measurement, export and planner handoff', () => {
+  const app = appHarness();
+  app.evaluate('currentImage = { old: true }; activeGeometry = { widthMm: 300, heightMm: 200 }; measuredMm = { width: 600, height: 400 }; updateArea();');
+  assert.equal(app.element('sendAreaBtn').disabled, false);
+  const version = app.evaluate('calibrationVersion');
+  app.context.loadImageFile({ name: 'oversized.jpg', size: 31 * 1024 * 1024 });
+  assert.equal(app.evaluate('currentImage'), null);
+  assert.equal(app.evaluate('activeGeometry'), null);
+  assert.equal(app.evaluate('calibrationVersion'), version + 1);
+  assert.equal(app.element('canvases').classList.contains('is-hidden'), true);
+  assert.equal(app.element('measurementPanel').classList.contains('is-hidden'), true);
+  assert.equal(app.element('sendAreaBtn').disabled, true);
+  assert.equal(app.element('sendAreaBtn').dataset.area, undefined);
+  assert.equal(app.element('areaResult').textContent, '—');
+  assert.equal(app.element('fileName').textContent, 'oversized.jpg');
+  assert.match(app.element('result').textContent, /30 MB/);
+  app.element('exportPhotoBtn').dispatch('click');
+  app.element('sendAreaBtn').dispatch('click');
+  assert.equal(app.context.window.location.href, '');
+});
+
+test('oversized selection cancels in-flight image callbacks and a later valid photo can load', () => {
+  const app = appHarness();
+  app.context.loadImageFile({ name: 'pending.jpg', size: 1000 });
+  const pending = app.images.at(0);
+  app.context.loadImageFile({ name: 'oversized.jpg', size: 31 * 1024 * 1024 });
+  assert.ok(app.revoked.includes(pending.src));
+  pending.onload();
+  pending.onerror();
+  assert.equal(app.evaluate('currentImage'), null);
+  assert.match(app.element('result').textContent, /30 MB/);
+  app.context.loadImageFile({ name: 'valid.jpg', size: 1000 });
+  const valid = app.images.at(-1);
+  valid.onload();
+  assert.equal(app.evaluate('currentImage'), valid);
+  assert.equal(app.element('manualCornersBtn').disabled, false);
+  assert.equal(app.element('canvases').classList.contains('is-hidden'), false);
+  assert.equal(app.element('sendAreaBtn').disabled, true);
 });
